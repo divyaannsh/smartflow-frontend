@@ -1,116 +1,311 @@
-# Team Project Manager
+# 🚀 Team Project Manager - Professional Jira Alternative
 
-A modern, Jira-like project management tool for teams to manage deadlines, work allocation, priorities, and tasks.
+A modern, feature-rich project management application built with React, TypeScript, and Node.js. Perfect for teams looking for a professional alternative to Jira with enhanced UI/UX and comprehensive functionality.
 
-## Features
+![Team Project Manager](https://img.shields.io/badge/React-18.2.0-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+![Material-UI](https://img.shields.io/badge/Material--UI-5.14-blue)
+![Node.js](https://img.shields.io/badge/Node.js-18.0-green)
 
-- **Project Management**: Create and manage multiple projects
-- **Task Management**: Create, assign, and track tasks with deadlines
-- **Work Allocation**: Assign tasks to team members with workload tracking
-- **Priority Management**: Set and manage task priorities
-- **Deadline Tracking**: Monitor project and task deadlines
-- **Team Dashboard**: Real-time overview of team workload and progress
-- **Kanban Board**: Visual task management with drag-and-drop
-- **Reporting**: Generate reports on team performance and project progress
+## ✨ Features
 
-## Tech Stack
+### 🎯 **Core Project Management**
+- **Project Creation & Management**: Create, edit, and organize projects with detailed information
+- **Task Management**: Comprehensive task creation, assignment, and tracking
+- **User Management**: Role-based access control (Admin, Manager, Member)
+- **Real-time Progress Tracking**: Visual progress indicators and status updates
 
-- **Frontend**: React 18 with TypeScript
-- **Backend**: Node.js with Express
-- **Database**: SQLite (for simplicity, can be upgraded to PostgreSQL)
-- **UI Framework**: Material-UI (MUI)
-- **State Management**: React Context + Hooks
-- **Authentication**: JWT-based authentication
+### 📊 **Advanced Dashboard**
+- **Overview Statistics**: Key metrics and KPIs at a glance
+- **Project Progress**: Visual progress bars and completion tracking
+- **Task Analytics**: Detailed task statistics and performance metrics
+- **Team Workload**: User workload distribution and capacity planning
 
-## Quick Start
+### 🎨 **Modern UI/UX**
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
+- **Material Design**: Beautiful, intuitive interface using Material-UI
+- **Dark/Light Theme**: Customizable theme options
+- **Interactive Components**: Hover effects, animations, and smooth transitions
 
-1. **Install dependencies**:
+### 🔧 **Task Management Features**
+- **Kanban Board**: Drag-and-drop task management with visual columns
+- **Task Details**: Comprehensive task information with descriptions, deadlines, and priorities
+- **Status Workflow**: Automated status progression (To Do → In Progress → Review → Done)
+- **Priority Levels**: Critical, High, Medium, Low priority management
+- **Time Tracking**: Built-in timer for tracking actual vs estimated hours
+- **Comments System**: Real-time collaboration with threaded comments
+
+### 👥 **Team Collaboration**
+- **User Profiles**: Detailed user profiles with role management
+- **Task Assignment**: Easy task assignment with user avatars
+- **Project Teams**: Team member management per project
+- **Activity Tracking**: Comprehensive activity logs and history
+
+### 📈 **Analytics & Reporting**
+- **Project Statistics**: Detailed project performance metrics
+- **Task Analytics**: Time tracking, completion rates, and efficiency metrics
+- **User Performance**: Individual and team performance tracking
+- **Custom Reports**: Generate detailed reports and insights
+
+### 🔔 **Notification System**
+- **Real-time Notifications**: Instant updates for task assignments and status changes
+- **Smart Alerts**: Deadline reminders and priority notifications
+- **Unread Count**: Visual indicators for new notifications
+- **Actionable Notifications**: Click to navigate directly to relevant items
+
+### 🛡️ **Security & Authentication**
+- **User Authentication**: Secure login system with session management
+- **Role-based Access**: Admin, Manager, and Member permissions
+- **Data Protection**: Secure API endpoints and data validation
+- **Session Management**: Automatic logout and security features
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- SQLite (included)
+
+### Installation
+
+1. **Clone the repository**
    ```bash
-   npm run install-all
+   git clone https://github.com/divyaannsh/Jirasoftware.git
+   cd Jirasoftware
    ```
 
-2. **Start development servers**:
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server**
    ```bash
    npm run dev
    ```
 
-3. **Access the application**:
+4. **Access the application**
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:5000
 
-## Project Structure
+### Default Login Credentials
+- **Username**: admin
+- **Password**: admin123
+
+## 📁 Project Structure
 
 ```
-├── client/                 # React frontend
+jira/
+├── client/                 # React Frontend
 │   ├── src/
 │   │   ├── components/    # Reusable UI components
-│   │   ├── pages/         # Page components
-│   │   ├── contexts/      # React contexts
-│   │   ├── services/      # API services
-│   │   └── types/         # TypeScript type definitions
-├── server/                # Node.js backend
-│   ├── routes/            # API routes
-│   ├── models/            # Data models
-│   ├── middleware/        # Express middleware
-│   └── database/          # Database setup
-└── shared/                # Shared types and utilities
+│   │   ├── pages/        # Application pages
+│   │   ├── contexts/     # React contexts
+│   │   ├── services/     # API services
+│   │   └── types/        # TypeScript type definitions
+│   └── public/           # Static assets
+├── server/               # Node.js Backend
+│   ├── routes/          # API routes
+│   ├── database/        # Database files
+│   └── index.js         # Server entry point
+└── README.md           # This file
 ```
 
-## Features in Detail
+## 🎯 Key Features in Detail
 
-### Project Management
+### **Project Management**
 - Create and manage multiple projects
-- Set project deadlines and milestones
-- Track project progress and completion
+- Set project priorities and deadlines
+- Track project progress with visual indicators
+- Assign team members to projects
+- Project-specific task management
 
-### Task Management
-- Create tasks with descriptions, deadlines, and priorities
-- Assign tasks to team members
-- Track task status (To Do, In Progress, Review, Done)
-- Add comments and attachments to tasks
+### **Task Management**
+- **Kanban Board**: Visual task management with drag-and-drop
+- **Task Details**: Comprehensive task information
+- **Status Workflow**: Automated progression through task states
+- **Time Tracking**: Built-in timer for accurate time tracking
+- **Comments**: Real-time collaboration with threaded comments
+- **Attachments**: File upload and management (coming soon)
 
-### Work Allocation
-- View team member workload
-- Balance task distribution
-- Track individual and team productivity
+### **User Management**
+- **Role-based Access**: Admin, Manager, Member roles
+- **User Profiles**: Detailed user information and statistics
+- **Team Assignment**: Easy task and project assignment
+- **Performance Tracking**: Individual and team metrics
 
-### Priority Management
-- Set task priorities (Low, Medium, High, Critical)
-- Filter and sort by priority
-- Priority-based task ordering
+### **Dashboard & Analytics**
+- **Overview Dashboard**: Key metrics and KPIs
+- **Project Analytics**: Detailed project performance
+- **Task Statistics**: Time tracking and completion rates
+- **User Workload**: Team capacity and workload distribution
 
-### Dashboard & Reporting
-- Real-time project overview
-- Team performance metrics
-- Deadline alerts and notifications
-- Progress tracking and analytics
+### **Notification System**
+- **Real-time Updates**: Instant notifications for changes
+- **Smart Filtering**: Priority-based notification management
+- **Actionable Alerts**: Direct navigation to relevant items
+- **Unread Tracking**: Visual indicators for new notifications
 
-## API Endpoints
+## 🛠️ Technology Stack
 
-### Projects
-- `GET /api/projects` - Get all projects
-- `POST /api/projects` - Create new project
-- `PUT /api/projects/:id` - Update project
-- `DELETE /api/projects/:id` - Delete project
+### **Frontend**
+- **React 18**: Modern React with hooks and functional components
+- **TypeScript**: Type-safe development
+- **Material-UI 5**: Professional UI components
+- **React Router**: Client-side routing
+- **Axios**: HTTP client for API calls
 
-### Tasks
-- `GET /api/tasks` - Get all tasks
-- `POST /api/tasks` - Create new task
-- `PUT /api/tasks/:id` - Update task
-- `DELETE /api/tasks/:id` - Delete task
+### **Backend**
+- **Node.js**: Server-side JavaScript runtime
+- **Express.js**: Web application framework
+- **SQLite**: Lightweight database
+- **JWT**: JSON Web Token authentication
+- **CORS**: Cross-origin resource sharing
 
-### Users
-- `GET /api/users` - Get all users
-- `POST /api/users` - Create new user
-- `PUT /api/users/:id` - Update user
+### **Development Tools**
+- **ESLint**: Code linting and formatting
+- **Prettier**: Code formatting
+- **Concurrently**: Run multiple commands simultaneously
+- **Nodemon**: Development server with auto-restart
 
-## Contributing
+## 🎨 UI/UX Features
+
+### **Modern Design**
+- Clean, professional interface
+- Consistent color scheme and typography
+- Responsive design for all devices
+- Smooth animations and transitions
+
+### **User Experience**
+- Intuitive navigation and workflows
+- Quick actions and shortcuts
+- Contextual help and tooltips
+- Progressive disclosure of information
+
+### **Accessibility**
+- Keyboard navigation support
+- Screen reader compatibility
+- High contrast mode support
+- Responsive design for all screen sizes
+
+## 🔧 Configuration
+
+### Environment Variables
+Create a `.env` file in the root directory:
+
+```env
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+
+# Database Configuration
+DB_PATH=./server/database/project_manager.db
+
+# JWT Configuration
+JWT_SECRET=your-secret-key
+JWT_EXPIRES_IN=24h
+```
+
+### Customization
+- **Theme**: Modify colors and styling in `client/src/theme/`
+- **API**: Configure endpoints in `client/src/services/apiService.ts`
+- **Database**: Modify schema in `server/database/init.js`
+
+## 📊 Performance Features
+
+### **Optimization**
+- Lazy loading of components
+- Efficient state management
+- Optimized database queries
+- Caching strategies
+
+### **Scalability**
+- Modular architecture
+- RESTful API design
+- Database optimization
+- Horizontal scaling support
+
+## 🔒 Security Features
+
+### **Authentication**
+- JWT-based authentication
+- Secure password handling
+- Session management
+- Role-based access control
+
+### **Data Protection**
+- Input validation and sanitization
+- SQL injection prevention
+- XSS protection
+- CORS configuration
+
+## 🚀 Deployment
+
+### **Production Build**
+```bash
+# Build the frontend
+cd client
+npm run build
+
+# Start the production server
+cd ../server
+npm start
+```
+
+### **Docker Deployment**
+```dockerfile
+# Dockerfile example
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+EXPOSE 5000
+CMD ["npm", "start"]
+```
+
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## License
+## 📝 License
 
-MIT License - see LICENSE file for details 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+For support and questions:
+- Create an issue in the GitHub repository
+- Contact the development team
+- Check the documentation
+
+## 🎯 Roadmap
+
+### **Upcoming Features**
+- [ ] File attachment system
+- [ ] Advanced reporting and analytics
+- [ ] Mobile app (React Native)
+- [ ] Real-time collaboration
+- [ ] Advanced search and filtering
+- [ ] Email notifications
+- [ ] Calendar integration
+- [ ] API documentation
+
+### **Enhancements**
+- [ ] Dark mode toggle
+- [ ] Custom themes
+- [ ] Advanced permissions
+- [ ] Audit logging
+- [ ] Data export/import
+- [ ] Multi-language support
+
+---
+
+**Built with ❤️ using React, TypeScript, and Material-UI**
+
+*Perfect for teams looking for a professional, feature-rich project management solution.* 

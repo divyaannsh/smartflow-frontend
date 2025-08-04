@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
 import Tasks from './pages/Tasks';
+import TaskForm from './pages/TaskForm';
 import Users from './pages/Users';
 import UserProfile from './pages/UserProfile';
 import AdminTaskAssignment from './pages/AdminTaskAssignment';
@@ -36,7 +37,9 @@ const App: React.FC = () => {
             <Route path="projects" element={<Projects />} />
             <Route path="projects/:id" element={<ProjectDetail />} />
             <Route path="tasks" element={<Tasks />} />
+            <Route path="tasks/new" element={<TaskForm />} />
             <Route path="tasks/:id" element={<TaskDetail />} />
+            <Route path="tasks/:id/edit" element={<TaskForm />} />
             <Route path="users" element={<Users />} />
             <Route path="profile" element={<UserProfile />} />
             <Route path="admin/task-assignment" element={<AdminTaskAssignment />} />

@@ -29,6 +29,7 @@ import {
   Assignment,
   Schedule,
   Person,
+  Edit,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { tasksService } from '../services/apiService';
@@ -105,17 +106,28 @@ const Tasks: React.FC = () => {
   };
 
   const TaskCard: React.FC<{ task: Task }> = ({ task }) => (
-    <Card sx={{ mb: 2, cursor: 'pointer' }} onClick={() => navigate(`/tasks/${task.id}`)}>
+    <Card sx={{ mb: 2, cursor: 'pointer', '&:hover': { boxShadow: 3 } }} onClick={() => navigate(`/tasks/${task.id}`)}>
       <CardContent sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 'bold', flex: 1 }}>
             {task.title}
           </Typography>
-          <Chip
-            label={task.priority}
-            color={getPriorityColor(task.priority) as any}
-            size="small"
-          />
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Chip
+              label={task.priority}
+              color={getPriorityColor(task.priority) as any}
+              size="small"
+            />
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/tasks/${task.id}/edit`);
+              }}
+            >
+              <Edit fontSize="small" />
+            </IconButton>
+          </Box>
         </Box>
         
         {task.description && (
@@ -132,6 +144,11 @@ const Tasks: React.FC = () => {
               label={task.project_name}
               size="small"
               variant="outlined"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/projects/${task.project_id}`);
+              }}
+              clickable
             />
           )}
         </Box>
@@ -150,6 +167,13 @@ const Tasks: React.FC = () => {
                 <Schedule fontSize="small" color="action" />
               </Tooltip>
             )}
+            {task.estimated_hours && (
+              <Tooltip title={`Estimated: ${task.estimated_hours}h`}>
+                <Typography variant="caption" color="text.secondary">
+                  {task.estimated_hours}h
+                </Typography>
+              </Tooltip>
+            )}
           </Box>
           
           <Chip
@@ -161,6 +185,7 @@ const Tasks: React.FC = () => {
               const nextStatus = getNextStatus(task.status);
               if (nextStatus) handleStatusChange(task.id, nextStatus);
             }}
+            sx={{ cursor: 'pointer' }}
           />
         </Box>
       </CardContent>

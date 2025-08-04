@@ -30,6 +30,7 @@ import {
   AdminPanelSettings,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import NotificationSystem from './NotificationSystem';
 
 const drawerWidth = 240;
 
@@ -117,6 +118,7 @@ const Layout: React.FC = () => {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Team Project Manager
           </Typography>
+          <NotificationSystem />
           <IconButton
             size="large"
             aria-label="account of current user"
