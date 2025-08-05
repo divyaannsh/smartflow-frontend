@@ -22,18 +22,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    console.log('AuthContext: Token found:', !!token);
     if (token) {
       authService.getCurrentUser()
         .then(userData => {
+          console.log('AuthContext: User loaded:', userData);
           setUser(userData);
         })
-        .catch(() => {
+        .catch((error) => {
+          console.log('AuthContext: Error loading user:', error);
           localStorage.removeItem('token');
         })
         .finally(() => {
           setLoading(false);
         });
     } else {
+      console.log('AuthContext: No token found');
       setLoading(false);
     }
   }, []);

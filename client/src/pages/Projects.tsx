@@ -74,14 +74,17 @@ const Projects: React.FC = () => {
   });
 
   const handleViewProject = (project: Project) => {
+    console.log('View project clicked:', project.id);
     navigate(`/projects/${project.id}`);
   };
 
   const handleEditProject = (project: Project) => {
+    console.log('Edit project clicked:', project.id);
     navigate(`/projects/${project.id}/edit`);
   };
 
   const handleDeleteProjectClick = (project: Project) => {
+    console.log('Delete project clicked:', project.id);
     setProjectToDelete(project);
     setDeleteDialogOpen(true);
   };

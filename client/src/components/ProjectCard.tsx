@@ -24,10 +24,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onEdit, onDelete, on
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    console.log('Menu opened');
     setAnchorEl(event.currentTarget);
   };
 
   const handleMenuClose = () => {
+    console.log('Menu closed');
     setAnchorEl(null);
   };
 
@@ -116,11 +118,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onEdit, onDelete, on
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={() => { onEdit(project); handleMenuClose(); }}>
+        <MenuItem onClick={() => { console.log('Edit clicked for project:', project.id); onEdit(project); handleMenuClose(); }}>
           <Edit fontSize="small" sx={{ mr: 1 }} />
           Edit
         </MenuItem>
-        <MenuItem onClick={() => { onDelete(project); handleMenuClose(); }}>
+        <MenuItem onClick={() => { console.log('Delete clicked for project:', project.id); onDelete(project); handleMenuClose(); }}>
           <Delete fontSize="small" sx={{ mr: 1 }} />
           Delete
         </MenuItem>
