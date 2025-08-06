@@ -47,6 +47,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authService.login(username, password);
       setUser(response.user);
       localStorage.setItem('token', response.token);
+      
+      // Redirect to role-based redirect page
+      window.location.href = '/redirect';
     } catch (error) {
       throw error;
     }

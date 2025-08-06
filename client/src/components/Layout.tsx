@@ -65,12 +65,27 @@ const Layout: React.FC = () => {
     { text: 'Users', icon: <People />, path: '/users' },
   ];
 
-  // Add admin-specific menu items
+  // Add role-specific menu items
   if (user?.role === 'admin') {
+    // Admin menu items
+    menuItems.push(
+      {
+        text: 'Admin Dashboard',
+        icon: <AdminPanelSettings />,
+        path: '/admin'
+      },
+      {
+        text: 'Task Assignment',
+        icon: <AdminPanelSettings />,
+        path: '/admin/task-assignment'
+      }
+    );
+  } else {
+    // User menu items
     menuItems.push({
-      text: 'Task Assignment',
-      icon: <AdminPanelSettings />,
-      path: '/admin/task-assignment'
+      text: 'My Portal',
+      icon: <Person />,
+      path: '/portal'
     });
   }
 
