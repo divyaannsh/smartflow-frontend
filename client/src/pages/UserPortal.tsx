@@ -3,132 +3,104 @@ import {
   Box,
   Typography,
   Grid,
-  Paper,
   Card,
   CardContent,
-  Avatar,
-  Chip,
+  Paper,
+  CircularProgress,
+  Alert,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Avatar,
+  Chip,
+  LinearProgress,
+  Fade,
+  Slide,
+  Grow,
+  useTheme,
+  alpha,
+  Divider,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemAvatar,
+  ListItemSecondaryAction,
   IconButton,
   Tooltip,
-  Alert,
-  CircularProgress,
-  Tabs,
-  Tab,
-  LinearProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  Badge,
 } from '@mui/material';
 import {
   Person,
   Assignment,
-  Work,
-  TrendingUp,
+  Schedule,
   CheckCircle,
   Warning,
   Error,
   Visibility,
   Edit,
-  Schedule,
+  Add,
+  TrendingUp,
+  TrendingDown,
+  Speed,
+  Timeline,
+  CalendarToday,
+  PriorityHigh,
+  Done,
+  Pending,
+  Block,
+  Work,
   Timer,
-  Group,
-  Search,
+  Assessment,
+  BarChart,
+  PieChart,
+  Notifications,
+  Star,
+  EmojiEvents,
+  Psychology,
+  Lightbulb,
 } from '@mui/icons-material';
-import { usersService, tasksService, projectsService } from '../services/apiService';
-import { User, Task, Project, UserWorkload } from '../types';
+import { projectsService, tasksService, usersService } from '../services/apiService';
+import { Project, Task, User, TaskStats } from '../types';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`user-tabpanel-${index}`}
-      aria-labelledby={`user-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
-
 const UserPortal: React.FC = () => {
-  const { user } = useAuth();
-  const [users, setUsers] = useState<User[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [userWorkload, setUserWorkload] = useState<UserWorkload | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [taskStats, setTaskStats] = useState<TaskStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [tabValue, setTabValue] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (user) {
-      console.log('UserPortal: Loading data for user:', user);
-      loadUserData();
-    } else {
-      console.log('UserPortal: No user found');
-    }
-  }, [user]);
+    loadUserData();
+  }, []);
 
   const loadUserData = async () => {
-    if (!user) return;
-    
     try {
       setLoading(true);
-      setError('');
-      console.log('UserPortal: Starting to load user data...');
-      
-      const [usersData, tasksData, projectsData, workloadData] = await Promise.all([
-        usersService.getAll(),
-        tasksService.getAll(),
+      const [projectsData, tasksData, usersData, statsData] = await Promise.all([
         projectsService.getAll(),
-        usersService.getWorkload(user.id)
+        tasksService.getAll(),
+        usersService.getAll(),
+        tasksService.getStats(),
       ]);
       
-      console.log('UserPortal: Data loaded successfully:', {
-        users: usersData.length,
-        tasks: tasksData.length,
-        projects: projectsData.length,
-        workload: workloadData
-      });
-      
-      setUsers(usersData);
-      setTasks(tasksData);
       setProjects(projectsData);
-      setUserWorkload(workloadData);
+      setTasks(tasksData);
+      setUsers(usersData);
+      setTaskStats(statsData);
     } catch (err: any) {
-      console.error('UserPortal: Error loading user data:', err);
-      setError(err.response?.data?.error || 'Failed to load user data. Please try again.');
+      setError(err.response?.data?.error || 'Failed to load user data');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
   };
 
   const getPriorityColor = (priority: string) => {
@@ -151,347 +123,576 @@ const UserPortal: React.FC = () => {
     }
   };
 
-  const getWorkloadPercentage = (workload: UserWorkload) => {
-    const totalTasks = workload.total_tasks;
-    const completedTasks = workload.done_tasks;
-    return totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+  const getTaskStatusIcon = (status: string) => {
+    switch (status) {
+      case 'done': return <Done color="success" />;
+      case 'in_progress': return <Pending color="warning" />;
+      case 'review': return <Timeline color="info" />;
+      case 'todo': return <Schedule color="action" />;
+      default: return <Block color="error" />;
+    }
   };
 
-  const getUserTasks = (userId: number) => {
-    return tasks.filter(task => task.assigned_to === userId);
+  // Get current user's tasks
+  const getUserTasks = () => {
+    return tasks.filter(task => task.assigned_to === user?.id);
   };
 
-  const getUserProjects = (userId: number) => {
-    const userTasks = getUserTasks(userId);
-    const projectIds = Array.from(new Set(userTasks.map(task => task.project_id)));
-    return projects.filter(project => projectIds.includes(project.id));
+  // Get current user's projects
+  const getUserProjects = () => {
+    const userTaskProjectIds = getUserTasks().map(task => task.project_id);
+    return projects.filter(project => userTaskProjectIds.includes(project.id));
   };
 
-  const filteredTasks = tasks.filter(task => {
-    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
-    const isAssignedToUser = task.assigned_to === user?.id;
-    return matchesSearch && matchesStatus && isAssignedToUser;
-  });
-
-  if (!user) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <Typography>Please log in to access your portal.</Typography>
-      </Box>
+  // Get overdue tasks for current user
+  const getOverdueTasks = () => {
+    return getUserTasks().filter(task => 
+      task.deadline && new Date(task.deadline) < new Date() && task.status !== 'done'
     );
-  }
+  };
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
+  // Get today's tasks
+  const getTodayTasks = () => {
+    const today = new Date();
+    return getUserTasks().filter(task => 
+      task.deadline && new Date(task.deadline).toDateString() === today.toDateString()
     );
-  }
+  };
 
-  const userTasks = getUserTasks(user.id);
-  const userProjects = getUserProjects(user.id);
+  // Get this week's tasks
+  const getThisWeekTasks = () => {
+    const today = new Date();
+    const endOfWeek = new Date(today);
+    endOfWeek.setDate(today.getDate() + 7);
+    
+    return getUserTasks().filter(task => 
+      task.deadline && new Date(task.deadline) <= endOfWeek && task.status !== 'done'
+    );
+  };
 
-  return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <Person sx={{ mr: 2, fontSize: 32 }} />
-        <Typography variant="h4">My Portal</Typography>
-      </Box>
+  // Calculate user's completion rate
+  const getCompletionRate = () => {
+    const userTasks = getUserTasks();
+    const totalTasks = userTasks.length;
+    if (totalTasks === 0) return 0;
+    const completedTasks = userTasks.filter(task => task.status === 'done').length;
+    return (completedTasks / totalTasks) * 100;
+  };
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
+  // Calculate productivity score
+  const getProductivityScore = () => {
+    const completionRate = getCompletionRate();
+    const overdueTasks = getOverdueTasks().length;
+    const totalTasks = getUserTasks().length;
+    
+    if (totalTasks === 0) return 100;
+    
+    const overduePenalty = (overdueTasks / totalTasks) * 30;
+    return Math.max(0, completionRate - overduePenalty);
+  };
 
-      <Paper sx={{ width: '100%' }}>
-        <Tabs value={tabValue} onChange={handleTabChange} aria-label="user portal tabs">
-          <Tab label="My Overview" icon={<Person />} />
-          <Tab label="My Tasks" icon={<Assignment />} />
-          <Tab label="Team View" icon={<Group />} />
-        </Tabs>
-
-        <TabPanel value={tabValue} index={0}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Card>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Avatar sx={{ mr: 2, width: 64, height: 64 }}>
-                      {user.full_name.charAt(0)}
-                    </Avatar>
-                    <Box>
-                      <Typography variant="h5">{user.full_name}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        @{user.username} • {user.role}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {user.email}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  {userWorkload && (
-                    <Box sx={{ mt: 3 }}>
-                      <Typography variant="h6" gutterBottom>
-                        My Workload
-                      </Typography>
-                      <Box sx={{ mb: 2 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                          <Typography variant="body2" color="text.secondary">
-                            Progress
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {Math.round(getWorkloadPercentage(userWorkload))}%
-                          </Typography>
-                        </Box>
-                        <LinearProgress
-                          variant="determinate"
-                          value={getWorkloadPercentage(userWorkload)}
-                          sx={{ height: 8, borderRadius: 4 }}
-                        />
-                      </Box>
-
-                      <Grid container spacing={2}>
-                        <Grid item xs={3}>
-                          <Box textAlign="center">
-                            <Typography variant="h6" color="primary">
-                              {userWorkload.total_tasks}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              Total
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        <Grid item xs={3}>
-                          <Box textAlign="center">
-                            <Typography variant="h6" color="info.main">
-                              {userWorkload.in_progress_tasks}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              Active
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        <Grid item xs={3}>
-                          <Box textAlign="center">
-                            <Typography variant="h6" color="success.main">
-                              {userWorkload.done_tasks}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              Done
-                            </Typography>
-                          </Box>
-                        </Grid>
-                        <Grid item xs={3}>
-                          <Box textAlign="center">
-                            <Typography variant="h6" color="error.main">
-                              {userWorkload.overdue_tasks}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              Overdue
-                            </Typography>
-                          </Box>
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Quick Stats
-                  </Typography>
-                  <Box sx={{ mt: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                      <Typography variant="body2">My Tasks</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {userTasks.length}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                      <Typography variant="body2">My Projects</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {userProjects.length}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                      <Typography variant="body2">Team Members</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {users.length}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                      <Typography variant="body2">Total Projects</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {projects.length}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </TabPanel>
-
-        <TabPanel value={tabValue} index={1}>
-          <Box sx={{ mb: 3 }}>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  placeholder="Search my tasks..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  InputProps={{
-                    startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />,
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Status Filter</InputLabel>
-                  <Select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    label="Status Filter"
-                  >
-                    <MenuItem value="all">All Status</MenuItem>
-                    <MenuItem value="todo">To Do</MenuItem>
-                    <MenuItem value="in_progress">In Progress</MenuItem>
-                    <MenuItem value="review">Review</MenuItem>
-                    <MenuItem value="done">Done</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
+  const UserStatCard: React.FC<{
+    title: string;
+    value: number;
+    icon: React.ReactNode;
+    color: string;
+    subtitle?: string;
+    trend?: number;
+    trendDirection?: 'up' | 'down';
+  }> = ({ title, value, icon, color, subtitle, trend, trendDirection }) => (
+    <Grow in timeout={300}>
+      <Card
+        sx={{
+          height: '100%',
+          background: `linear-gradient(135deg, ${alpha(color, 0.1)} 0%, ${alpha(color, 0.05)} 100%)`,
+          border: `1px solid ${alpha(color, 0.2)}`,
+          transition: 'all 0.3s ease-in-out',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: `0 8px 25px ${alpha(color, 0.3)}`,
+          },
+        }}
+      >
+        <CardContent sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Box
+              sx={{
+                p: 1.5,
+                borderRadius: 2,
+                backgroundColor: alpha(color, 0.2),
+                color: color,
+              }}
+            >
+              {icon}
+            </Box>
+            {trend !== undefined && (
+              <Chip
+                label={`${trendDirection === 'up' ? '+' : ''}${trend}%`}
+                size="small"
+                color={trendDirection === 'up' ? 'success' : 'error'}
+                icon={trendDirection === 'up' ? <TrendingUp /> : <TrendingDown />}
+              />
+            )}
           </Box>
+          <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+            {value.toLocaleString()}
+          </Typography>
+          <Typography variant="h6" sx={{ mb: 0.5, fontWeight: 600 }}>
+            {title}
+          </Typography>
+          {subtitle && (
+            <Typography variant="body2" color="text.secondary">
+              {subtitle}
+            </Typography>
+          )}
+        </CardContent>
+      </Card>
+    </Grow>
+  );
 
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Task</TableCell>
-                  <TableCell>Project</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Priority</TableCell>
-                  <TableCell>Deadline</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredTasks.map((task) => {
-                  const project = projects.find(p => p.id === task.project_id);
+  const PersonalProgress: React.FC = () => {
+    const completionRate = getCompletionRate();
+    const productivityScore = getProductivityScore();
+    const userTasks = getUserTasks();
+    const completedTasks = userTasks.filter(task => task.status === 'done').length;
+    
+    return (
+      <Slide direction="up" in timeout={400}>
+        <Card sx={{ height: '100%' }}>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Person sx={{ fontSize: 32, color: 'primary.main', mr: 2 }} />
+              <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                My Progress
+              </Typography>
+            </Box>
+            
+            <Grid container spacing={3}>
+              <Grid item xs={6}>
+                <Box sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: 'success.main' }}>
+                    {Math.round(completionRate)}%
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Completion Rate
+                  </Typography>
+                  <LinearProgress
+                    variant="determinate"
+                    value={completionRate}
+                    sx={{ mt: 1, height: 8, borderRadius: 4 }}
+                  />
+                </Box>
+              </Grid>
+              <Grid item xs={6}>
+                <Box sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: 'info.main' }}>
+                    {Math.round(productivityScore)}%
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Productivity Score
+                  </Typography>
+                  <LinearProgress
+                    variant="determinate"
+                    value={productivityScore}
+                    sx={{ mt: 1, height: 8, borderRadius: 4 }}
+                  />
+                </Box>
+              </Grid>
+              <Grid item xs={6}>
+                <Box sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: 'warning.main' }}>
+                    {completedTasks}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Tasks Completed
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={6}>
+                <Box sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: 'error.main' }}>
+                    {getOverdueTasks().length}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Overdue Tasks
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      </Slide>
+    );
+  };
 
-                  return (
-                    <TableRow key={task.id}>
-                      <TableCell>
-                        <Typography variant="body2" fontWeight="medium">
-                          {task.title}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {task.description?.substring(0, 50)}...
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {project?.name || 'Unknown Project'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={task.status.replace('_', ' ')}
-                          color={getStatusColor(task.status) as any}
-                          size="small"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={task.priority}
-                          color={getPriorityColor(task.priority) as any}
-                          size="small"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
+  const TodayTasks: React.FC = () => {
+    const todayTasks = getTodayTasks();
+    
+    return (
+      <Slide direction="up" in timeout={500}>
+        <Card sx={{ height: '100%' }}>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <CalendarToday sx={{ fontSize: 32, color: 'secondary.main', mr: 2 }} />
+              <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                Today's Tasks
+              </Typography>
+            </Box>
+            
+            {todayTasks.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <CheckCircle sx={{ fontSize: 48, color: 'success.main', mb: 2 }} />
+                <Typography variant="h6" color="success.main">
+                  No tasks due today!
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Great job staying on top of your work.
+                </Typography>
+              </Box>
+            ) : (
+              <List>
+                {todayTasks.map((task, index) => (
+                  <Fade in timeout={600 + index * 100} key={task.id}>
+                    <ListItem sx={{ px: 0, mb: 2 }}>
+                      <ListItemAvatar>
+                        <Avatar sx={{ backgroundColor: alpha(theme.palette.primary.main, 0.2) }}>
+                          {getTaskStatusIcon(task.status)}
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                              {task.title}
+                            </Typography>
+                            <Chip
+                              label={task.priority}
+                              size="small"
+                              color={getPriorityColor(task.priority) as any}
+                            />
+                          </Box>
+                        }
+                        secondary={
+                          <Typography variant="body2" color="text.secondary">
+                            {task.description?.substring(0, 60)}...
+                          </Typography>
+                        }
+                      />
+                      <ListItemSecondaryAction>
                         <Tooltip title="View Task">
                           <IconButton size="small">
                             <Visibility />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="Edit Task">
-                          <IconButton size="small">
-                            <Edit />
-                          </IconButton>
-                        </Tooltip>
-                      </TableCell>
-                    </TableRow>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  </Fade>
+                ))}
+              </List>
+            )}
+          </CardContent>
+        </Card>
+      </Slide>
+    );
+  };
+
+  const UpcomingDeadlines: React.FC = () => {
+    const thisWeekTasks = getThisWeekTasks();
+    
+    return (
+      <Slide direction="up" in timeout={600}>
+        <Card sx={{ height: '100%' }}>
+          <CardContent sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Schedule sx={{ fontSize: 32, color: 'warning.main', mr: 2 }} />
+              <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                Upcoming Deadlines
+              </Typography>
+            </Box>
+            
+            {thisWeekTasks.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <EmojiEvents sx={{ fontSize: 48, color: 'success.main', mb: 2 }} />
+                <Typography variant="h6" color="success.main">
+                  All caught up!
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  No urgent deadlines this week.
+                </Typography>
+              </Box>
+            ) : (
+              <List>
+                {thisWeekTasks.slice(0, 5).map((task, index) => {
+                  const daysUntilDeadline = task.deadline ? 
+                    Math.ceil((new Date(task.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0;
+                  
+                  return (
+                    <Fade in timeout={700 + index * 100} key={task.id}>
+                      <ListItem sx={{ px: 0, mb: 2 }}>
+                        <ListItemAvatar>
+                          <Avatar sx={{ 
+                            backgroundColor: daysUntilDeadline <= 1 ? 'error.main' : 
+                              daysUntilDeadline <= 3 ? 'warning.main' : 'info.main' 
+                          }}>
+                            {daysUntilDeadline}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                {task.title}
+                              </Typography>
+                              <Chip
+                                label={daysUntilDeadline === 0 ? 'Today' : 
+                                  daysUntilDeadline === 1 ? 'Tomorrow' : 
+                                  `${daysUntilDeadline} days`}
+                                size="small"
+                                color={daysUntilDeadline <= 1 ? 'error' : 
+                                  daysUntilDeadline <= 3 ? 'warning' : 'info'}
+                              />
+                            </Box>
+                          }
+                          secondary={
+                            <Typography variant="body2" color="text.secondary">
+                              Due: {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}
+                            </Typography>
+                          }
+                        />
+                        <ListItemSecondaryAction>
+                          <Tooltip title="View Task">
+                            <IconButton size="small">
+                              <Visibility />
+                            </IconButton>
+                          </Tooltip>
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    </Fade>
+                  );
+                })}
+              </List>
+            )}
+          </CardContent>
+        </Card>
+      </Slide>
+    );
+  };
+
+  const MyTasks: React.FC = () => (
+    <Slide direction="up" in timeout={700}>
+      <Card>
+        <CardContent sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Assignment sx={{ fontSize: 32, color: 'primary.main', mr: 2 }} />
+              <Typography variant="h5" sx={{ fontWeight: 600 }}>
+                My Tasks
+              </Typography>
+            </Box>
+            <Tooltip title="Add New Task">
+              <IconButton
+                size="small"
+                onClick={() => navigate('/tasks')}
+                sx={{ color: 'primary.main' }}
+              >
+                <Add />
+              </IconButton>
+            </Tooltip>
+          </Box>
+          
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600 }}>Task</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Project</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Priority</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Deadline</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {getUserTasks().map((task, index) => {
+                  const project = projects.find(p => p.id === task.project_id);
+                  const isOverdue = task.deadline && new Date(task.deadline) < new Date() && task.status !== 'done';
+                  
+                  return (
+                    <Fade in timeout={800 + index * 100} key={task.id}>
+                      <TableRow 
+                        hover
+                        sx={{
+                          '&:hover': {
+                            backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                          },
+                          backgroundColor: isOverdue ? alpha(theme.palette.error.main, 0.05) : 'transparent',
+                        }}
+                      >
+                        <TableCell>
+                          <Box>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                              {task.title}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {task.description?.substring(0, 50)}...
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {project?.name || 'Unknown Project'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={task.status.replace('_', ' ')}
+                            color={getStatusColor(task.status) as any}
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={task.priority}
+                            color={getPriorityColor(task.priority) as any}
+                            size="small"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Box>
+                            <Typography variant="body2">
+                              {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}
+                            </Typography>
+                            {isOverdue && (
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                                <Warning color="error" sx={{ fontSize: 12 }} />
+                                <Typography variant="caption" color="error">
+                                  Overdue
+                                </Typography>
+                              </Box>
+                            )}
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Box sx={{ display: 'flex', gap: 0.5 }}>
+                            <Tooltip title="View Task">
+                              <IconButton 
+                                size="small" 
+                                color="primary"
+                                onClick={() => navigate(`/tasks/${task.id}`)}
+                              >
+                                <Visibility />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Edit Task">
+                              <IconButton size="small" color="info">
+                                <Edit />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    </Fade>
                   );
                 })}
               </TableBody>
             </Table>
           </TableContainer>
-        </TabPanel>
+        </CardContent>
+      </Card>
+    </Slide>
+  );
 
-        <TabPanel value={tabValue} index={2}>
-          <Typography variant="h6" gutterBottom>
-            Team Members
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress size={60} />
+      </Box>
+    );
+  }
+
+  return (
+    <Box>
+      <Fade in timeout={300}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+            Welcome back, {user?.full_name}! 👋
           </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+            Your personal workspace - Track your progress, manage deadlines, and stay productive.
+          </Typography>
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>
+              {error}
+            </Alert>
+          )}
+
           <Grid container spacing={3}>
-            {users.map((teamMember) => {
-              const memberTasks = getUserTasks(teamMember.id);
-              const memberProjects = getUserProjects(teamMember.id);
-
-              return (
-                <Grid item xs={12} md={6} lg={4} key={teamMember.id}>
-                  <Card>
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <Avatar sx={{ mr: 2, width: 48, height: 48 }}>
-                          {teamMember.full_name.charAt(0)}
-                        </Avatar>
-                        <Box sx={{ flex: 1 }}>
-                          <Typography variant="h6">{teamMember.full_name}</Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            @{teamMember.username} • {teamMember.role}
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                        <Chip
-                          label={`${memberTasks.length} tasks`}
-                          size="small"
-                          icon={<Assignment />}
-                        />
-                        <Chip
-                          label={`${memberProjects.length} projects`}
-                          size="small"
-                          icon={<Work />}
-                        />
-                      </Box>
-
-                      <Typography variant="body2" color="text.secondary">
-                        {teamMember.email}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              );
-            })}
+            <Grid item xs={12} sm={6} md={3}>
+              <UserStatCard
+                title="My Tasks"
+                value={getUserTasks().length}
+                icon={<Assignment />}
+                color={theme.palette.primary.main}
+                subtitle={`${getUserTasks().filter(t => t.status === 'done').length} completed`}
+                trend={8}
+                trendDirection="up"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <UserStatCard
+                title="My Projects"
+                value={getUserProjects().length}
+                icon={<Work />}
+                color={theme.palette.success.main}
+                subtitle="Active projects"
+                trend={12}
+                trendDirection="up"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <UserStatCard
+                title="Today's Tasks"
+                value={getTodayTasks().length}
+                icon={<CalendarToday />}
+                color={theme.palette.warning.main}
+                subtitle="Due today"
+                trend={-5}
+                trendDirection="down"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <UserStatCard
+                title="Overdue"
+                value={getOverdueTasks().length}
+                icon={<PriorityHigh />}
+                color={theme.palette.error.main}
+                subtitle="Needs attention"
+                trend={-15}
+                trendDirection="down"
+              />
+            </Grid>
           </Grid>
-        </TabPanel>
-      </Paper>
+
+          <Grid container spacing={3} sx={{ mt: 2 }}>
+            <Grid item xs={12} md={4}>
+              <PersonalProgress />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TodayTasks />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <UpcomingDeadlines />
+            </Grid>
+          </Grid>
+
+          <Grid container spacing={3} sx={{ mt: 2 }}>
+            <Grid item xs={12}>
+              <MyTasks />
+            </Grid>
+          </Grid>
+        </Box>
+      </Fade>
     </Box>
   );
 };

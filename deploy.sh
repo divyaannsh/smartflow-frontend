@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 🚀 Vercel Deployment Script
-# This script helps deploy your Team Project Manager app to Vercel
+# This script helps deploy your SmartFlow AI app to Vercel
 
 echo "🚀 Starting Vercel Deployment..."
 

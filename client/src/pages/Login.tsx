@@ -5,29 +5,43 @@ import {
   TextField,
   Button,
   Typography,
-  Alert,
   Container,
+  Alert,
   Tabs,
   Tab,
   Card,
   CardContent,
-  Grid,
-  Chip,
-  MenuItem,
   Divider,
+  InputAdornment,
+  IconButton,
+  Fade,
+  Slide,
+  Grow,
+  useTheme,
+  alpha,
+  MenuItem,
 } from '@mui/material';
 import {
-  AdminPanelSettings,
+  Visibility,
+  VisibilityOff,
   Person,
-  Security,
+  Lock,
+  Email,
+  AdminPanelSettings,
   Work,
   Group,
-  Favorite,
-  Code,
+  School,
+  Business,
+  Security,
+  VerifiedUser,
+  AccountCircle,
+  Login as LoginIcon,
+  PersonAdd,
+  WorkOutline,
+  GroupAdd,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../services/apiService';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -42,62 +56,51 @@ function TabPanel(props: TabPanelProps) {
     <div
       role="tabpanel"
       hidden={value !== index}
-      id={`auth-tabpanel-${index}`}
-      aria-labelledby={`auth-tab-${index}`}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
       {...other}
     >
-      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
-  </div>
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          {children}
+        </Box>
+      )}
+    </div>
   );
 }
 
 const Login: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  
-  // Admin login form state
-  const [adminLoginData, setAdminLoginData] = useState({
-    username: '',
-    password: '',
-  });
-  
-  // User login form state
-  const [userLoginData, setUserLoginData] = useState({
-    username: '',
-    password: '',
-  });
-  
-  // Register form state
+  const [adminLoginData, setAdminLoginData] = useState({ username: '', password: '' });
+  const [userLoginData, setUserLoginData] = useState({ username: '', password: '' });
   const [registerData, setRegisterData] = useState({
-    username: '',
+    full_name: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    full_name: '',
-    role: 'member' as 'admin' | 'manager' | 'member',
+    role: 'member'
   });
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
     setError('');
-    setSuccess('');
   };
 
   const handleAdminLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
-
+    setError('');
+    
     try {
       await login(adminLoginData.username, adminLoginData.password);
       navigate('/admin');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Admin login failed');
+      setError(err.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -105,14 +108,14 @@ const Login: React.FC = () => {
 
   const handleUserLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
-
+    setError('');
+    
     try {
       await login(userLoginData.username, userLoginData.password);
       navigate('/portal');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'User login failed');
+      setError(err.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -120,36 +123,12 @@ const Login: React.FC = () => {
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
     setLoading(true);
-
-    // Validate passwords match
-    if (registerData.password !== registerData.confirmPassword) {
-      setError('Passwords do not match');
-      setLoading(false);
-      return;
-    }
-
+    setError('');
+    
     try {
-      await authService.register({
-        username: registerData.username,
-        email: registerData.email,
-        password: registerData.password,
-        full_name: registerData.full_name,
-        role: registerData.role,
-      });
-      
-      setSuccess('Registration successful! You can now sign in.');
-      setRegisterData({
-        username: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        full_name: '',
-        role: 'member',
-      });
-      setTabValue(0); // Switch to login tab
+      // Register logic here
+      setError('Registration feature coming soon!');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Registration failed');
     } finally {
@@ -157,382 +136,400 @@ const Login: React.FC = () => {
     }
   };
 
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case 'admin': return <AdminPanelSettings />;
+      case 'manager': return <Work />;
+      case 'member': return <Group />;
+      default: return <Person />;
+    }
+  };
+
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'admin': return theme.palette.error.main;
+      case 'manager': return theme.palette.warning.main;
+      case 'member': return theme.palette.info.main;
+      default: return theme.palette.primary.main;
+    }
+  };
+
   return (
-    <Container component="main" maxWidth="md">
-      <Box
-        sx={{
-          marginTop: 4,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Typography component="h1" variant="h3" gutterBottom align="center">
-          Team Project Manager
-        </Typography>
-        <Typography component="h2" variant="h6" color="text.secondary" gutterBottom align="center">
-          Choose your login portal
-        </Typography>
-
-        <Tabs value={tabValue} onChange={handleTabChange} sx={{ width: '100%', mb: 3 }}>
-          <Tab label="Admin Portal" icon={<AdminPanelSettings />} />
-          <Tab label="User Portal" icon={<Person />} />
-          <Tab label="Register" icon={<Security />} />
-        </Tabs>
-
-        {error && (
-          <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-
-        {success && (
-          <Alert severity="success" sx={{ width: '100%', mb: 2 }}>
-            {success}
-          </Alert>
-        )}
-
-        {/* Admin Portal Tab */}
-        <TabPanel value={tabValue} index={0}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <AdminPanelSettings sx={{ mr: 1, color: 'primary.main' }} />
-                    <Typography variant="h6">Admin Access</Typography>
-                  </Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                    Access the admin dashboard to manage teams, projects, and system settings.
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        p: 2,
+      }}
+    >
+      <Container maxWidth="md">
+        <Fade in timeout={800}>
+          <Box>
+            {/* Header */}
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <Grow in timeout={1000}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+                  <Work sx={{ fontSize: 48, mr: 2, color: 'white' }} />
+                  <Typography variant="h3" sx={{ fontWeight: 700, color: 'white' }}>
+                    SmartFlow AI
                   </Typography>
-                  
-                  <Box component="form" onSubmit={handleAdminLoginSubmit}>
-                    <TextField
-                      margin="normal"
-                      required
-                      fullWidth
-                      id="admin-username"
-                      label="Admin Username"
-                      name="username"
-                      autoComplete="username"
-                      autoFocus
-                      value={adminLoginData.username}
-                      onChange={(e) => setAdminLoginData({ ...adminLoginData, username: e.target.value })}
-                    />
-                    <TextField
-                      margin="normal"
-                      required
-                      fullWidth
-                      name="password"
-                      label="Admin Password"
-                      type="password"
-                      id="admin-password"
-                      autoComplete="current-password"
-                      value={adminLoginData.password}
-                      onChange={(e) => setAdminLoginData({ ...adminLoginData, password: e.target.value })}
-                    />
-                    <Button
-                      type="submit"
-                      fullWidth
-                      variant="contained"
-                      sx={{ mt: 3, mb: 2 }}
-                      disabled={loading}
-                    >
-                      {loading ? 'Signing in...' : 'Admin Sign In'}
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%', bgcolor: 'grey.50' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Admin Features
-                  </Typography>
-                  <Box sx={{ mb: 2 }}>
-                    <Chip icon={<Group />} label="Team Management" sx={{ mr: 1, mb: 1 }} />
-                    <Chip icon={<Work />} label="Project Oversight" sx={{ mr: 1, mb: 1 }} />
-                    <Chip icon={<AdminPanelSettings />} label="System Settings" sx={{ mr: 1, mb: 1 }} />
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Demo Admin Credentials:</strong><br />
-                    Username: admin<br />
-                    Password: admin123
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </TabPanel>
-
-        {/* User Portal Tab */}
-        <TabPanel value={tabValue} index={1}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Person sx={{ mr: 1, color: 'secondary.main' }} />
-                    <Typography variant="h6">User Access</Typography>
-                  </Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                    Access your personal portal to manage tasks and collaborate with your team.
-                  </Typography>
-                  
-                  <Box component="form" onSubmit={handleUserLoginSubmit}>
-                    <TextField
-                      margin="normal"
-                      required
-                      fullWidth
-                      id="user-username"
-                      label="Username"
-                      name="username"
-                      autoComplete="username"
-                      autoFocus
-                      value={userLoginData.username}
-                      onChange={(e) => setUserLoginData({ ...userLoginData, username: e.target.value })}
-                    />
-                    <TextField
-                      margin="normal"
-                      required
-                      fullWidth
-                      name="password"
-                      label="Password"
-                      type="password"
-                      id="user-password"
-                      autoComplete="current-password"
-                      value={userLoginData.password}
-                      onChange={(e) => setUserLoginData({ ...userLoginData, password: e.target.value })}
-                    />
-                    <Button
-                      type="submit"
-                      fullWidth
-                      variant="contained"
-                      color="secondary"
-                      sx={{ mt: 3, mb: 2 }}
-                      disabled={loading}
-                    >
-                      {loading ? 'Signing in...' : 'User Sign In'}
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Card sx={{ height: '100%', bgcolor: 'grey.50' }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    User Features
-                  </Typography>
-                  <Box sx={{ mb: 2 }}>
-                    <Chip icon={<Work />} label="Task Management" sx={{ mr: 1, mb: 1 }} />
-                    <Chip icon={<Group />} label="Team Collaboration" sx={{ mr: 1, mb: 1 }} />
-                    <Chip icon={<Person />} label="Personal Dashboard" sx={{ mr: 1, mb: 1 }} />
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Demo User Credentials:</strong><br />
-                    Username: john.doe<br />
-                    Password: john123<br />
-                    <br />
-                    Username: jane.smith<br />
-                    Password: jane123
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </TabPanel>
-
-        {/* Register Tab */}
-        <TabPanel value={tabValue} index={2}>
-          <Paper sx={{ p: 3, maxWidth: 600, mx: 'auto' }}>
-            <Typography variant="h6" gutterBottom>
-              Create New Account
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Register a new user account. Only admins can create admin accounts.
-            </Typography>
-            
-            <Box component="form" onSubmit={handleRegisterSubmit}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="register-username"
-                    label="Username"
-                    name="username"
-                    autoComplete="username"
-                    value={registerData.username}
-                    onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="register-email"
-                    label="Email Address"
-                    name="email"
-                    autoComplete="email"
-                    type="email"
-                    value={registerData.email}
-                    onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="register-fullname"
-                    label="Full Name"
-                    name="full_name"
-                    autoComplete="name"
-                    value={registerData.full_name}
-                    onChange={(e) => setRegisterData({ ...registerData, full_name: e.target.value })}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    name="password"
-                    label="Password"
-                    type="password"
-                    id="register-password"
-                    autoComplete="new-password"
-                    value={registerData.password}
-                    onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    name="confirmPassword"
-                    label="Confirm Password"
-                    type="password"
-                    id="register-confirm-password"
-                    autoComplete="new-password"
-                    value={registerData.confirmPassword}
-                    onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    select
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="register-role"
-                    label="Role"
-                    name="role"
-                    value={registerData.role}
-                    onChange={(e) => setRegisterData({ ...registerData, role: e.target.value as any })}
-                  >
-                    <MenuItem value="member">Member</MenuItem>
-                    <MenuItem value="manager">Manager</MenuItem>
-                  </TextField>
-                </Grid>
-              </Grid>
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-                disabled={loading}
-              >
-                {loading ? 'Creating account...' : 'Create Account'}
-              </Button>
+                </Box>
+              </Grow>
+              <Slide direction="up" in timeout={1200}>
+                <Typography variant="h6" sx={{ color: 'white', opacity: 0.9 }}>
+                  Intelligent Project Management Platform
+                </Typography>
+              </Slide>
             </Box>
-          </Paper>
-        </TabPanel>
-      </Box>
-      
-      {/* Beautiful Footer */}
-      <Box
-        sx={{
-          mt: 6,
-          py: 4,
-          px: 2,
-          backgroundColor: 'background.paper',
-          borderTop: '1px solid',
-          borderColor: 'divider',
-          textAlign: 'center',
-        }}
-      >
-        <Container maxWidth="md">
-          <Box sx={{ mb: 2 }}>
-            <Typography 
-              variant="h6" 
-              color="primary.main" 
-              sx={{ 
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                mb: 1
-              }}
-            >
-              <Code sx={{ mr: 1, fontSize: '1.2rem' }} />
-              Crafted with Passion
-              <Favorite sx={{ ml: 1, fontSize: '1.2rem', color: 'error.main' }} />
-            </Typography>
+
+            {/* Main Card */}
+            <Slide direction="up" in timeout={1400}>
+              <Card
+                sx={{
+                  maxWidth: 600,
+                  mx: 'auto',
+                  borderRadius: 4,
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                  overflow: 'hidden',
+                  background: 'rgba(255,255,255,0.95)',
+                  backdropFilter: 'blur(10px)',
+                }}
+              >
+                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                  <Tabs
+                    value={tabValue}
+                    onChange={handleTabChange}
+                    variant="fullWidth"
+                    sx={{
+                      '& .MuiTab-root': {
+                        py: 2,
+                        fontWeight: 600,
+                        fontSize: '1rem',
+                      },
+                      '& .Mui-selected': {
+                        color: 'primary.main',
+                      },
+                    }}
+                  >
+                    <Tab
+                      icon={<AdminPanelSettings />}
+                      label="Admin Portal"
+                      iconPosition="start"
+                    />
+                    <Tab
+                      icon={<WorkOutline />}
+                      label="User Portal"
+                      iconPosition="start"
+                    />
+                    <Tab
+                      icon={<PersonAdd />}
+                      label="Register"
+                      iconPosition="start"
+                    />
+                  </Tabs>
+                </Box>
+
+                {error && (
+                  <Alert severity="error" sx={{ m: 2 }} onClose={() => setError('')}>
+                    {error}
+                  </Alert>
+                )}
+
+                {/* Admin Login */}
+                <TabPanel value={tabValue} index={0}>
+                  <Grow in timeout={500}>
+                    <Box>
+                      <Box sx={{ textAlign: 'center', mb: 3 }}>
+                        <AdminPanelSettings sx={{ fontSize: 48, color: 'primary.main', mb: 1 }} />
+                        <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
+                          Admin Portal
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Access system administration and team management
+                        </Typography>
+                      </Box>
+                      
+                      <Box component="form" onSubmit={handleAdminLoginSubmit}>
+                        <TextField
+                          fullWidth
+                          label="Username"
+                          type="text"
+                          value={adminLoginData.username}
+                          onChange={(e) => setAdminLoginData({ ...adminLoginData, username: e.target.value })}
+                          sx={{ mb: 3 }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Person color="action" />
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        <TextField
+                          fullWidth
+                          label="Password"
+                          type={showPassword ? 'text' : 'password'}
+                          value={adminLoginData.password}
+                          onChange={(e) => setAdminLoginData({ ...adminLoginData, password: e.target.value })}
+                          sx={{ mb: 3 }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Lock color="action" />
+                              </InputAdornment>
+                            ),
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  edge="end"
+                                >
+                                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        <Button
+                          type="submit"
+                          fullWidth
+                          variant="contained"
+                          size="large"
+                          disabled={loading}
+                          sx={{
+                            py: 1.5,
+                            background: 'linear-gradient(45deg, #667eea 0%, #764ba2 100%)',
+                            '&:hover': {
+                              background: 'linear-gradient(45deg, #5a6fd8 0%, #6a4190 100%)',
+                            },
+                          }}
+                        >
+                          {loading ? 'Signing In...' : 'Sign In as Admin'}
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Grow>
+                </TabPanel>
+
+                {/* User Login */}
+                <TabPanel value={tabValue} index={1}>
+                  <Grow in timeout={500}>
+                    <Box>
+                      <Box sx={{ textAlign: 'center', mb: 3 }}>
+                        <WorkOutline sx={{ fontSize: 48, color: 'secondary.main', mb: 1 }} />
+                        <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
+                          User Portal
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Access your personal workspace and tasks
+                        </Typography>
+                      </Box>
+                      
+                      <Box component="form" onSubmit={handleUserLoginSubmit}>
+                        <TextField
+                          fullWidth
+                          label="Username"
+                          type="text"
+                          value={userLoginData.username}
+                          onChange={(e) => setUserLoginData({ ...userLoginData, username: e.target.value })}
+                          sx={{ mb: 3 }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Person color="action" />
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        <TextField
+                          fullWidth
+                          label="Password"
+                          type={showPassword ? 'text' : 'password'}
+                          value={userLoginData.password}
+                          onChange={(e) => setUserLoginData({ ...userLoginData, password: e.target.value })}
+                          sx={{ mb: 3 }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Lock color="action" />
+                              </InputAdornment>
+                            ),
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  edge="end"
+                                >
+                                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        <Button
+                          type="submit"
+                          fullWidth
+                          variant="contained"
+                          size="large"
+                          disabled={loading}
+                          sx={{
+                            py: 1.5,
+                            background: 'linear-gradient(45deg, #f093fb 0%, #f5576c 100%)',
+                            '&:hover': {
+                              background: 'linear-gradient(45deg, #e085e7 0%, #e54b60 100%)',
+                            },
+                          }}
+                        >
+                          {loading ? 'Signing In...' : 'Sign In as User'}
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Grow>
+                </TabPanel>
+
+                {/* Register */}
+                <TabPanel value={tabValue} index={2}>
+                  <Grow in timeout={500}>
+                    <Box>
+                      <Box sx={{ textAlign: 'center', mb: 3 }}>
+                        <PersonAdd sx={{ fontSize: 48, color: 'success.main', mb: 1 }} />
+                        <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
+                          Create Account
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Join our team and start managing projects
+                        </Typography>
+                      </Box>
+                      
+                      <Box component="form" onSubmit={handleRegisterSubmit}>
+                        <TextField
+                          fullWidth
+                          label="Full Name"
+                          value={registerData.full_name}
+                          onChange={(e) => setRegisterData({ ...registerData, full_name: e.target.value })}
+                          sx={{ mb: 3 }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Person color="action" />
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        <TextField
+                          fullWidth
+                          label="Email"
+                          type="email"
+                          value={registerData.email}
+                          onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                          sx={{ mb: 3 }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Email color="action" />
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        <TextField
+                          fullWidth
+                          label="Password"
+                          type={showPassword ? 'text' : 'password'}
+                          value={registerData.password}
+                          onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                          sx={{ mb: 3 }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <Lock color="action" />
+                              </InputAdornment>
+                            ),
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  edge="end"
+                                >
+                                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                        <TextField
+                          fullWidth
+                          select
+                          label="Role"
+                          value={registerData.role}
+                          onChange={(e) => setRegisterData({ ...registerData, role: e.target.value as any })}
+                          sx={{ mb: 3 }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                {getRoleIcon(registerData.role)}
+                              </InputAdornment>
+                            ),
+                          }}
+                        >
+                          <MenuItem value="member">Member</MenuItem>
+                          <MenuItem value="manager">Manager</MenuItem>
+                        </TextField>
+                        <Button
+                          type="submit"
+                          fullWidth
+                          variant="contained"
+                          size="large"
+                          disabled={loading}
+                          sx={{
+                            py: 1.5,
+                            background: 'linear-gradient(45deg, #4facfe 0%, #00f2fe 100%)',
+                            '&:hover': {
+                              background: 'linear-gradient(45deg, #43a1f4 0%, #00e6f4 100%)',
+                            },
+                          }}
+                        >
+                          {loading ? 'Creating Account...' : 'Create Account'}
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Grow>
+                </TabPanel>
+              </Card>
+            </Slide>
+
+            {/* Footer */}
+            <Slide direction="up" in timeout={1600}>
+              <Box sx={{ textAlign: 'center', mt: 4 }}>
+                <Card
+                  sx={{
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: 3,
+                    p: 3,
+                  }}
+                >
+                  <Typography variant="h6" sx={{ color: 'white', fontWeight: 600, mb: 1 }}>
+                    Crafted by Divyansh for Deckmount
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'white', opacity: 0.8 }}>
+                    SmartFlow AI - Intelligent Project Management Solution
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2 }}>
+                    <Security sx={{ color: 'white', opacity: 0.7 }} />
+                    <VerifiedUser sx={{ color: 'white', opacity: 0.7 }} />
+                    <Business sx={{ color: 'white', opacity: 0.7 }} />
+                  </Box>
+                </Card>
+              </Box>
+            </Slide>
           </Box>
-          
-          <Typography 
-            variant="body1" 
-            color="text.primary"
-            sx={{ 
-              fontWeight: 500,
-              mb: 1,
-              fontSize: '1.1rem'
-            }}
-          >
-            A Special Project by Divyansh for Deckmount
-          </Typography>
-          
-          <Typography 
-            variant="body2" 
-            color="text.secondary"
-            sx={{ 
-              mb: 2,
-              fontStyle: 'italic'
-            }}
-          >
-            "Building the future of team collaboration, one project at a time"
-          </Typography>
-          
-          <Divider sx={{ my: 2 }} />
-          
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-            <Typography variant="caption" color="text.secondary">
-              © {new Date().getFullYear()} Team Project Manager
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              •
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Built with React & Material-UI
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              •
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Powered by Node.js & Express
-            </Typography>
-          </Box>
-        </Container>
-      </Box>
-    </Container>
+        </Fade>
+      </Container>
+    </Box>
   );
 };
 

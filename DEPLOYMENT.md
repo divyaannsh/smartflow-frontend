@@ -1,6 +1,6 @@
-# 🚀 Vercel Deployment Guide
+# 🚀 SmartFlow AI - Vercel Deployment Guide
 
-This guide will help you deploy your Team Project Manager application to Vercel.
+This guide will help you deploy your SmartFlow AI application to Vercel.
 
 ## 📋 Prerequisites
 

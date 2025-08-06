@@ -1,11 +1,8 @@
-# 🚀 Team Project Manager - Professional Jira Alternative
+# 🚀 SmartFlow AI - Professional Jira Alternative
 
-A modern, feature-rich project management application built with React, TypeScript, and Node.js. Perfect for teams looking for a professional alternative to Jira with enhanced UI/UX and comprehensive functionality.
+A modern, intelligent project management platform built with React, Node.js, and Material-UI.
 
-![Team Project Manager](https://img.shields.io/badge/React-18.2.0-blue)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
-![Material-UI](https://img.shields.io/badge/Material--UI-5.14-blue)
-![Node.js](https://img.shields.io/badge/Node.js-18.0-green)
+![SmartFlow AI](https://img.shields.io/badge/React-18.2.0-blue)
 
 ## ✨ Features
 

@@ -1,4 +1,4 @@
-# Team Project Manager - Setup Guide
+# SmartFlow AI - Setup Guide
 
 ## Quick Start
 
