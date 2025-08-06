@@ -86,7 +86,10 @@ const UserPortal: React.FC = () => {
 
   useEffect(() => {
     if (user) {
+      console.log('UserPortal: Loading data for user:', user);
       loadUserData();
+    } else {
+      console.log('UserPortal: No user found');
     }
   }, [user]);
 
@@ -95,19 +98,30 @@ const UserPortal: React.FC = () => {
     
     try {
       setLoading(true);
+      setError('');
+      console.log('UserPortal: Starting to load user data...');
+      
       const [usersData, tasksData, projectsData, workloadData] = await Promise.all([
         usersService.getAll(),
         tasksService.getAll(),
         projectsService.getAll(),
-        usersService.getWorkload(user.id),
+        usersService.getWorkload(user.id)
       ]);
-
+      
+      console.log('UserPortal: Data loaded successfully:', {
+        users: usersData.length,
+        tasks: tasksData.length,
+        projects: projectsData.length,
+        workload: workloadData
+      });
+      
       setUsers(usersData);
       setTasks(tasksData);
       setProjects(projectsData);
       setUserWorkload(workloadData);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to load user data');
+      console.error('UserPortal: Error loading user data:', err);
+      setError(err.response?.data?.error || 'Failed to load user data. Please try again.');
     } finally {
       setLoading(false);
     }

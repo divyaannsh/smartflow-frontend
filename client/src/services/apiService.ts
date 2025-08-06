@@ -3,7 +3,7 @@
 import { Project, Task, User, Comment, TaskStats, ProjectStats, UserWorkload } from '../types';
 
 // Use environment variable for API URL, fallback to localhost for development
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -33,6 +33,9 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Export the api instance for use in other services
+export default api;
 
 // Auth API
 export const authService = {

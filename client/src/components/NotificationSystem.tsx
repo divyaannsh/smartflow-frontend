@@ -23,9 +23,11 @@ import {
   Info,
   MoreVert,
 } from '@mui/icons-material';
+import { notificationManager, UserNotification } from '../services/notificationService';
+import { useAuth } from '../contexts/AuthContext';
 
 export interface Notification {
-  id: number;
+  id: string;
   title: string;
   message: string;
   type: 'info' | 'success' | 'warning' | 'error';
@@ -45,7 +47,7 @@ export interface Notification {
 interface NotificationSystemProps {
   notifications?: Notification[];
   onNotificationClick?: (notification: Notification) => void;
-  onMarkAsRead?: (notificationId: number) => void;
+  onMarkAsRead?: (notificationId: string) => void;
   onMarkAllAsRead?: () => void;
 }
 
@@ -55,12 +57,21 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({
   onMarkAsRead,
   onMarkAllAsRead,
 }) => {
+  const { user } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [localNotifications, setLocalNotifications] = useState<Notification[]>(notifications);
+  const [localNotifications, setLocalNotifications] = useState<UserNotification[]>([]);
 
   useEffect(() => {
-    setLocalNotifications(notifications);
-  }, [notifications]);
+    // Subscribe to notification changes
+    const unsubscribe = notificationManager.subscribe((notifications) => {
+      setLocalNotifications(notifications);
+    });
+
+    // Load initial notifications
+    setLocalNotifications(notificationManager.getNotifications());
+
+    return unsubscribe;
+  }, []);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -70,21 +81,26 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({
     setAnchorEl(null);
   };
 
-  const handleNotificationClick = (notification: Notification) => {
-    if (!notification.read && onMarkAsRead) {
-      onMarkAsRead(notification.id);
+  const handleNotificationClick = (notification: UserNotification) => {
+    if (!notification.read) {
+      notificationManager.markAsRead(notification.id);
     }
     if (onNotificationClick) {
-      onNotificationClick(notification);
+      onNotificationClick(notification as Notification);
     }
     handleClose();
   };
 
   const handleMarkAllAsRead = () => {
+    notificationManager.markAllAsRead();
     if (onMarkAllAsRead) {
       onMarkAllAsRead();
     }
     handleClose();
+  };
+
+  const handleDeleteNotification = (notificationId: string) => {
+    notificationManager.deleteNotification(notificationId);
   };
 
   const getNotificationIcon = (type: string) => {
@@ -113,7 +129,7 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({
     }
   };
 
-  const unreadCount = localNotifications.filter(n => !n.read).length;
+  const unreadCount = notificationManager.getUnreadCount();
 
   return (
     <Box>
@@ -198,15 +214,15 @@ const NotificationSystem: React.FC<NotificationSystemProps> = ({
                       {notification.message}
                     </Typography>
                     <Box display="flex" alignItems="center" gap={1} mt={1}>
-                      {notification.user && (
+                      {notification.senderName && (
                         <Box display="flex" alignItems="center" gap={1}>
                           <Avatar
                             sx={{ width: 16, height: 16, fontSize: '0.75rem' }}
                           >
-                            {notification.user.avatar || notification.user.name.charAt(0)}
+                            {notification.senderName.charAt(0)}
                           </Avatar>
                           <Typography variant="caption" color="text.secondary">
-                            {notification.user.name}
+                            {notification.senderName}
                           </Typography>
                         </Box>
                       )}

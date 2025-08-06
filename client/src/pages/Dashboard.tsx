@@ -41,6 +41,7 @@ import {
 import { projectsService, tasksService, usersService } from '../services/apiService';
 import { Project, Task, User, TaskStats } from '../types';
 import { useNavigate } from 'react-router-dom';
+import NotificationDashboard from '../components/NotificationDashboard';
 
 const Dashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -392,6 +393,9 @@ const Dashboard: React.FC = () => {
           {error}
         </Alert>
       )}
+
+      {/* Notification Dashboard */}
+      <NotificationDashboard maxNotifications={3} showUnreadOnly={false} />
 
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6} md={3}>

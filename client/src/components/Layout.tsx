@@ -31,6 +31,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import NotificationSystem from './NotificationSystem';
+import ChatButton from './ChatButton';
 
 const drawerWidth = 240;
 
@@ -134,6 +135,7 @@ const Layout: React.FC = () => {
             Team Project Manager
           </Typography>
           <NotificationSystem />
+          <ChatButton />
           <IconButton
             size="large"
             aria-label="account of current user"

@@ -4,6 +4,7 @@ import { Box } from '@mui/material';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import RoleRedirect from './components/RoleRedirect';
+import ErrorBoundary from './components/ErrorBoundary';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
@@ -39,55 +40,64 @@ const UserRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/redirect" element={<RoleRedirect />} />
-          <Route
-            path="/"
-            element={
-              <PrivateRoute>
-                <Layout />
-              </PrivateRoute>
-            }
-          >
-            <Route index element={<Dashboard />} />
-            <Route path="projects" element={<Projects />} />
-            <Route path="projects/:id" element={<ProjectDetail />} />
-            <Route path="tasks" element={<Tasks />} />
-            <Route path="tasks/new" element={<TaskForm />} />
-            <Route path="tasks/:id" element={<TaskDetail />} />
-            <Route path="tasks/:id/edit" element={<TaskForm />} />
-            <Route path="users" element={<Users />} />
-            <Route path="profile" element={<UserProfile />} />
-          </Route>
-          
-          {/* User Portal Routes */}
-          <Route
-            path="/portal"
-            element={
-              <UserRoute>
-                <Layout />
-              </UserRoute>
-            }
-          >
-            <Route index element={<UserPortal />} />
-          </Route>
-          
-          {/* Admin Portal Routes */}
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute>
-                <Layout />
-              </AdminRoute>
-            }
-          >
-            <Route index element={<AdminDashboard />} />
-            <Route path="task-assignment" element={<AdminTaskAssignment />} />
-          </Route>
-        </Routes>
-      </Box>
+      <ErrorBoundary>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/redirect" element={<RoleRedirect />} />
+            
+            {/* Main App Routes */}
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <Layout />
+                </PrivateRoute>
+              }
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="projects" element={<Projects />} />
+              <Route path="projects/:id" element={<ProjectDetail />} />
+              <Route path="tasks" element={<Tasks />} />
+              <Route path="tasks/new" element={<TaskForm />} />
+              <Route path="tasks/:id" element={<TaskDetail />} />
+              <Route path="tasks/:id/edit" element={<TaskForm />} />
+              <Route path="users" element={<Users />} />
+              <Route path="profile" element={<UserProfile />} />
+            </Route>
+            
+            {/* User Portal Routes - Separate Layout */}
+            <Route
+              path="/portal"
+              element={
+                <UserRoute>
+                  <Layout />
+                </UserRoute>
+              }
+            >
+              <Route index element={<UserPortal />} />
+              <Route path="*" element={<Navigate to="/portal" replace />} />
+            </Route>
+            
+            {/* Admin Portal Routes - Separate Layout */}
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <Layout />
+                </AdminRoute>
+              }
+            >
+              <Route index element={<AdminDashboard />} />
+              <Route path="task-assignment" element={<AdminTaskAssignment />} />
+              <Route path="*" element={<Navigate to="/admin" replace />} />
+            </Route>
+            
+            {/* Catch-all route for unmatched paths */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Box>
+      </ErrorBoundary>
     </AuthProvider>
   );
 };
