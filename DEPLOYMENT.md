@@ -11,7 +11,7 @@ In your Vercel dashboard, add these environment variables:
 
 **For the Client (Frontend):**
 ```
-REACT_APP_API_URL=https://your-app-name.vercel.app/api
+REACT_APP_API_URL=https://jira-software.vercel.app/api
 ```
 
 **For the Server (Backend):**
