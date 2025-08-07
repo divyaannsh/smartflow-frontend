@@ -5,6 +5,26 @@ const jwt = require('jsonwebtoken');
 const { getDatabase } = require('../database/init');
 const router = express.Router();
 
+// Use default JWT secret if not provided
+const JWT_SECRET = process.env.JWT_SECRET || 'smartflow-ai-default-secret-key-2024';
+
+// Middleware to verify JWT token
+const verifyToken = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
 // Login
 router.post('/login', [
   body('username').notEmpty().withMessage('Username is required'),
@@ -42,7 +62,7 @@ router.post('/login', [
           username: user.username, 
           role: user.role 
         },
-        process.env.JWT_SECRET || 'your-secret-key',
+        JWT_SECRET,
         { expiresIn: '24h' }
       );
       
@@ -105,7 +125,7 @@ router.post('/register', [
             username: user.username, 
             role: user.role 
           },
-          process.env.JWT_SECRET || 'your-secret-key',
+          JWT_SECRET,
           { expiresIn: '24h' }
         );
         
@@ -121,23 +141,6 @@ router.post('/register', [
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
-// Verify token middleware
-const verifyToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  
-  if (!token) {
-    return res.status(401).json({ error: 'Access token required' });
-  }
-  
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
-};
 
 // Get current user
 router.get('/me', verifyToken, async (req, res) => {
@@ -184,7 +187,7 @@ router.post('/refresh', verifyToken, async (req, res) => {
           username: user.username, 
           role: user.role 
         },
-        process.env.JWT_SECRET || 'your-secret-key',
+        JWT_SECRET,
         { expiresIn: '24h' }
       );
       

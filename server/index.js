@@ -16,12 +16,13 @@ const { initializeDatabase } = require('./database/init');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS configuration for production
+// CORS configuration for production - use default if FRONTEND_URL not set
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
     ? [
-        'https://your-app-name.vercel.app', // Your Vercel domain
-        'https://your-app-name.netlify.app', // Netlify backup
+        process.env.FRONTEND_URL || 'https://jirasoftware.vercel.app',
+        'https://jirasoftware.vercel.app',
+        'https://smartflow-ai.vercel.app',
         'http://localhost:3000' // Keep localhost for development
       ]
     : ['http://localhost:3000', 'http://localhost:3001'],

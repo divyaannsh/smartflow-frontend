@@ -2,39 +2,38 @@
  import axios from 'axios';
 import { Project, Task, User, Comment, TaskStats, ProjectStats, UserWorkload } from '../types';
 
-// Use environment variable for API URL, fallback to localhost for development
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// Use default API URL if environment variable is not set
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://jirasoftware.vercel.app/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
 });
 
-// Add token to requests
+// Add interceptors for logging requests/responses
 api.interceptors.request.use((config) => {
+  console.log('🚀 API Request:', config.method?.toUpperCase(), config.url);
+  
+  // Add token to requests
   const token = localStorage.getItem('token');
-  console.log('API Request:', config.method?.toUpperCase(), config.url, 'Token:', !!token);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  
   return config;
 });
 
-// Add response interceptor for debugging
 api.interceptors.response.use(
   (response) => {
-    console.log('API Response:', response.status, response.config.url);
+    console.log('✅ API Response:', response.status, response.config.url);
     return response;
   },
   (error) => {
-    console.error('API Error:', error.response?.status, error.response?.data, error.config?.url);
+    console.error('❌ API Error:', error.response?.status, error.config?.url, error.message);
     return Promise.reject(error);
   }
 );
 
-// Export the api instance for use in other services
 export default api;
 
 // Auth API
