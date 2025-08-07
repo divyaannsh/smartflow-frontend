@@ -56,7 +56,34 @@ app.use('/api/auth', authRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Debug endpoint to check database connection
+app.get('/api/debug/db', async (req, res) => {
+  try {
+    const { getDatabase } = require('./database/init');
+    const db = getDatabase();
+    if (db) {
+      db.get('SELECT 1 as test', (err, row) => {
+        if (err) {
+          console.error('Database connection test failed:', err);
+          res.status(500).json({ error: 'Database connection failed', details: err.message });
+        } else {
+          res.json({ status: 'Database connected', test: row });
+        }
+      });
+    } else {
+      res.status(500).json({ error: 'Database not initialized' });
+    }
+  } catch (error) {
+    console.error('Debug endpoint error:', error);
+    res.status(500).json({ error: 'Debug endpoint failed', details: error.message });
+  }
 });
 
 // Error handling middleware
@@ -76,17 +103,36 @@ app.use('*', (req, res) => {
 // Initialize database and start server
 async function startServer() {
   try {
+    console.log('Starting server initialization...');
+    console.log('Environment:', process.env.NODE_ENV || 'development');
+    console.log('Port:', PORT);
+    
+    // Initialize database
+    console.log('Initializing database...');
     await initializeDatabase();
     console.log('Database initialized successfully');
     
+    // Start server
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`Health check: http://localhost:${PORT}/api/health`);
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+      console.log(`🔍 Debug DB: http://localhost:${PORT}/api/debug/db`);
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
+    console.error('❌ Failed to start server:', error);
     process.exit(1);
   }
 }
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
 
 startServer(); 
