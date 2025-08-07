@@ -1,20 +1,20 @@
 const express = require('express');
 const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
 const path = require('path');
-require('dotenv').config();
 
+// Import routes
 const authRoutes = require('./routes/auth');
 const projectsRoutes = require('./routes/projects');
 const tasksRoutes = require('./routes/tasks');
 const usersRoutes = require('./routes/users');
 // const notificationsRoutes = require('./routes/notifications'); // Temporarily disabled
 
-const { initializeDatabase } = require('./database/init');
-
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // CORS configuration for production - use default if FRONTEND_URL not set
 const corsOptions = {
@@ -35,26 +35,9 @@ const corsOptions = {
   optionsSuccessStatus: 200
 };
 
-// Middleware
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
 app.use(cors(corsOptions));
-app.use(morgan('combined'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Static files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Routes
-app.use('/api/projects', projectsRoutes);
-app.use('/api/tasks', tasksRoutes);
-app.use('/api/users', usersRoutes);
-app.use('/api/auth', authRoutes);
-// app.use('/api/notifications', notificationsRoutes); // Temporarily disabled
-
-// Health check
+// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
@@ -92,18 +75,19 @@ app.get('/api/debug/db', async (req, res) => {
   }
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ 
-    error: 'Something went wrong!',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
-  });
-});
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectsRoutes);
+app.use('/api/tasks', tasksRoutes);
+app.use('/api/users', usersRoutes);
+// app.use('/api/notifications', notificationsRoutes); // Temporarily disabled
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../client/build')));
+
+// Catch-all handler: send back React's index.html file for any non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/build/index.html'));
 });
 
 // Initialize database and start server
@@ -113,35 +97,33 @@ async function startServer() {
     console.log('Environment:', process.env.NODE_ENV || 'development');
     console.log('Port:', PORT);
     
-    // Initialize database with timeout
-    console.log('Initializing database...');
-    const dbInitPromise = initializeDatabase();
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Database initialization timeout')), 10000)
-    );
-    
-    try {
-      await Promise.race([dbInitPromise, timeoutPromise]);
-      console.log('Database initialized successfully');
-    } catch (dbError) {
-      console.error('Database initialization failed, but continuing with server startup:', dbError);
-      // Continue with server startup even if database fails
-    }
-    
-    // Start server
+    // Start server immediately
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
       console.log(`🔍 Debug DB: http://localhost:${PORT}/api/debug/db`);
     });
+    
+    // Try to initialize database in background (non-blocking)
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Initializing database in background...');
+      const { initializeDatabase } = require('./database/init');
+      initializeDatabase()
+        .then(() => {
+          console.log('Database initialized successfully');
+        })
+        .catch((error) => {
+          console.error('Database initialization failed (non-critical):', error);
+        });
+    } else {
+      console.log('Skipping database initialization in production (using in-memory)');
+    }
+    
   } catch (error) {
     console.error('❌ Failed to start server:', error);
-    // Don't exit process, let it continue
-    console.log('Server will continue without database initialization');
-    
     // Start server anyway
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT} (without database)`);
+      console.log(`🚀 Server running on port ${PORT} (with error handling)`);
       console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
     });
   }
