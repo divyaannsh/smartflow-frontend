@@ -97,10 +97,14 @@ const Login: React.FC = () => {
     setError('');
     
     try {
-      await login(adminLoginData.username, adminLoginData.password);
-      navigate('/admin');
+      const user = await login(adminLoginData.username, adminLoginData.password);
+      if (user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/portal');
+      }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed');
+      setError(err.response?.data?.message || err.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -112,10 +116,14 @@ const Login: React.FC = () => {
     setError('');
     
     try {
-      await login(userLoginData.username, userLoginData.password);
-      navigate('/portal');
+      const user = await login(userLoginData.username, userLoginData.password);
+      if (user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/portal');
+      }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed');
+      setError(err.response?.data?.message || err.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);
     }

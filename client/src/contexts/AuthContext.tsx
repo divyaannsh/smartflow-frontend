@@ -48,8 +48,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(response.user);
       localStorage.setItem('token', response.token);
       
-      // Redirect to role-based redirect page
-      window.location.href = '/redirect';
+      // Return the user data so the component can handle navigation
+      return response.user;
     } catch (error) {
       throw error;
     }

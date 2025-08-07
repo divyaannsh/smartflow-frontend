@@ -91,7 +91,7 @@ export interface UserWorkload {
 
 export interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<User>;
   logout: () => void;
   loading: boolean;
 } 
