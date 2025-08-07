@@ -34,6 +34,7 @@ import {
 } from '@mui/icons-material';
 import { tasksService, projectsService, usersService } from '../services/apiService';
 import { Task, Project, User } from '../types';
+import { notificationService } from '../services/notificationService';
 
 const TaskForm: React.FC = () => {
   const navigate = useNavigate();
@@ -131,33 +132,43 @@ const TaskForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+    setLoading(true);
+    setError('');
 
     try {
-      setSaving(true);
-      setError('');
-
       const taskData = {
-        ...formData,
-        project_id: parseInt(formData.project_id),
-        assigned_to: formData.assigned_to ? parseInt(formData.assigned_to) : undefined,
-        estimated_hours: parseFloat(formData.estimated_hours.toString()) || 0,
+        project_id: parseInt(formData.project_id.toString()),
+        assigned_to: formData.assigned_to ? parseInt(formData.assigned_to.toString()) : undefined,
+        estimated_hours: formData.estimated_hours,
+        title: formData.title,
+        description: formData.description,
+        status: formData.status as Task['status'],
+        priority: formData.priority as Task['priority'],
+        deadline: formData.deadline
       };
 
       if (isEditing) {
         await tasksService.update(parseInt(id!), taskData);
       } else {
-        await tasksService.create(taskData);
+        const newTask = await tasksService.create(taskData);
+        
+        // Send email notification if task is assigned to someone
+        if (taskData.assigned_to) {
+          try {
+            await notificationService.sendTaskAssignmentEmail(newTask.id, taskData.assigned_to);
+            console.log('Task assignment email sent successfully');
+          } catch (emailError) {
+            console.error('Failed to send task assignment email:', emailError);
+            // Don't fail the task creation if email fails
+          }
+        }
       }
 
       navigate('/tasks');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to save task');
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 

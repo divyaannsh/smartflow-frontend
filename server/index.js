@@ -5,10 +5,11 @@ const morgan = require('morgan');
 const path = require('path');
 require('dotenv').config();
 
-const projectRoutes = require('./routes/projects');
-const taskRoutes = require('./routes/tasks');
-const userRoutes = require('./routes/users');
 const authRoutes = require('./routes/auth');
+const projectsRoutes = require('./routes/projects');
+const tasksRoutes = require('./routes/tasks');
+const usersRoutes = require('./routes/users');
+const notificationsRoutes = require('./routes/notifications');
 const { initializeDatabase } = require('./database/init');
 
 const app = express();
@@ -36,10 +37,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
-app.use('/api/projects', projectRoutes);
-app.use('/api/tasks', taskRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/projects', projectsRoutes);
+app.use('/api/tasks', tasksRoutes);
+app.use('/api/users', usersRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/notifications', notificationsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

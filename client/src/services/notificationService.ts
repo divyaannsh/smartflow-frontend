@@ -1,14 +1,14 @@
 import api from './apiService';
+import { Notification } from '../components/NotificationSystem';
 
 export interface AdminMessage {
   id: string;
+  title: string;
   content: string;
   senderId: number;
   senderName: string;
-  senderAvatar: string;
   timestamp: Date;
-  targetUsers?: number[]; // Specific users to send to, if empty sends to all
-  channel: 'general' | 'announcement' | 'urgent';
+  targetUsers?: number[];
 }
 
 export interface UserNotification {
@@ -16,27 +16,33 @@ export interface UserNotification {
   title: string;
   message: string;
   type: 'info' | 'success' | 'warning' | 'error';
-  timestamp: Date;
   read: boolean;
-  senderId?: number;
+  timestamp: Date;
   senderName?: string;
-  action?: {
-    label: string;
-    url: string;
-  };
 }
 
-// Notification Service
-export const notificationService = {
-  // Send admin message to users
-  async sendAdminMessage(message: Omit<AdminMessage, 'id' | 'timestamp'>): Promise<AdminMessage> {
-    const response = await api.post('/notifications/admin-message', message);
-    return response.data;
-  },
+export interface EmailNotificationSettings {
+  emailNotifications: boolean;
+  taskAssignments: boolean;
+  deadlineReminders: boolean;
+  adminMessages: boolean;
+  projectUpdates: boolean;
+  email: string;
+}
 
-  // Get user notifications
-  async getUserNotifications(): Promise<UserNotification[]> {
-    const response = await api.get('/notifications/user');
+export interface EmailNotificationResponse {
+  message: string;
+  taskId?: number;
+  userId?: number;
+  email?: string;
+  sentTo?: number;
+  users?: Array<{ id: number; email: string; name: string }>;
+}
+
+export const notificationService = {
+  // Get all notifications
+  async getAll(): Promise<UserNotification[]> {
+    const response = await api.get('/notifications');
     return response.data;
   },
 
@@ -47,7 +53,7 @@ export const notificationService = {
 
   // Mark all notifications as read
   async markAllAsRead(): Promise<void> {
-    await api.put('/notifications/mark-all-read');
+    await api.put('/notifications/read-all');
   },
 
   // Delete notification
@@ -60,132 +66,171 @@ export const notificationService = {
     const response = await api.get('/notifications/unread-count');
     return response.data.count;
   },
+
+  // Email notification methods
+  async sendTaskAssignmentEmail(taskId: number, userId: number): Promise<EmailNotificationResponse> {
+    const response = await api.post('/notifications/task-assignment', {
+      taskId,
+      userId
+    });
+    return response.data;
+  },
+
+  async sendDeadlineReminderEmail(taskId: number): Promise<EmailNotificationResponse> {
+    const response = await api.post('/notifications/deadline-reminder', {
+      taskId
+    });
+    return response.data;
+  },
+
+  async sendAdminMessageEmail(title: string, content: string, userIds: number[]): Promise<EmailNotificationResponse> {
+    const response = await api.post('/notifications/admin-message', {
+      title,
+      content,
+      userIds
+    });
+    return response.data;
+  },
+
+  async sendProjectUpdateEmail(projectId: number): Promise<EmailNotificationResponse> {
+    const response = await api.post('/notifications/project-update', {
+      projectId
+    });
+    return response.data;
+  },
+
+  async sendWelcomeEmail(userId: number): Promise<EmailNotificationResponse> {
+    const response = await api.post('/notifications/welcome-email', {
+      userId
+    });
+    return response.data;
+  },
+
+  async testEmailConnection(): Promise<{ message: string; status: string }> {
+    const response = await api.get('/notifications/test-connection');
+    return response.data;
+  },
+
+  async getNotificationSettings(): Promise<EmailNotificationSettings> {
+    const response = await api.get('/notifications/settings');
+    return response.data;
+  }
 };
 
-// Local notification management (for demo purposes)
+// Local notification manager for in-app notifications
 class LocalNotificationManager {
   private notifications: UserNotification[] = [];
-  private listeners: ((notifications: UserNotification[]) => void)[] = [];
+  private subscribers: ((notifications: UserNotification[]) => void)[] = [];
 
   constructor() {
-    // Load notifications from localStorage
-    const saved = localStorage.getItem('notifications');
-    if (saved) {
-      this.notifications = JSON.parse(saved).map((n: any) => ({
+    this.loadNotifications();
+  }
+
+  private loadNotifications() {
+    const stored = localStorage.getItem('smartflow_notifications');
+    if (stored) {
+      this.notifications = JSON.parse(stored).map((n: any) => ({
         ...n,
-        timestamp: new Date(n.timestamp),
+        timestamp: new Date(n.timestamp)
       }));
     }
   }
 
-  // Add notification
-  addNotification(notification: Omit<UserNotification, 'id' | 'timestamp'>): void {
+  private saveNotifications() {
+    localStorage.setItem('smartflow_notifications', JSON.stringify(this.notifications));
+  }
+
+  private notifySubscribers() {
+    this.subscribers.forEach(callback => callback([...this.notifications]));
+  }
+
+  subscribe(callback: (notifications: UserNotification[]) => void) {
+    this.subscribers.push(callback);
+    callback([...this.notifications]);
+    
+    return () => {
+      this.subscribers = this.subscribers.filter(cb => cb !== callback);
+    };
+  }
+
+  addNotification(notification: Omit<UserNotification, 'id' | 'timestamp'>) {
     const newNotification: UserNotification = {
       ...notification,
       id: Date.now().toString(),
-      timestamp: new Date(),
-      read: false,
+      timestamp: new Date()
     };
-
+    
     this.notifications.unshift(newNotification);
-    this.saveToStorage();
-    this.notifyListeners();
+    this.saveNotifications();
+    this.notifySubscribers();
   }
 
-  // Mark as read
-  markAsRead(notificationId: string): void {
+  markAsRead(notificationId: string) {
     const notification = this.notifications.find(n => n.id === notificationId);
     if (notification) {
       notification.read = true;
-      this.saveToStorage();
-      this.notifyListeners();
+      this.saveNotifications();
+      this.notifySubscribers();
     }
   }
 
-  // Mark all as read
-  markAllAsRead(): void {
+  markAllAsRead() {
     this.notifications.forEach(n => n.read = true);
-    this.saveToStorage();
-    this.notifyListeners();
+    this.saveNotifications();
+    this.notifySubscribers();
   }
 
-  // Delete notification
-  deleteNotification(notificationId: string): void {
+  deleteNotification(notificationId: string) {
     this.notifications = this.notifications.filter(n => n.id !== notificationId);
-    this.saveToStorage();
-    this.notifyListeners();
+    this.saveNotifications();
+    this.notifySubscribers();
   }
 
-  // Get notifications
   getNotifications(): UserNotification[] {
     return [...this.notifications];
   }
 
-  // Get unread count
   getUnreadCount(): number {
     return this.notifications.filter(n => !n.read).length;
   }
 
-  // Subscribe to changes
-  subscribe(listener: (notifications: UserNotification[]) => void): () => void {
-    this.listeners.push(listener);
-    return () => {
-      this.listeners = this.listeners.filter(l => l !== listener);
-    };
-  }
-
-  // Notify listeners
-  private notifyListeners(): void {
-    this.listeners.forEach(listener => listener([...this.notifications]));
-  }
-
-  // Save to localStorage
-  private saveToStorage(): void {
-    localStorage.setItem('notifications', JSON.stringify(this.notifications));
+  clearAll() {
+    this.notifications = [];
+    this.saveNotifications();
+    this.notifySubscribers();
   }
 }
 
-// Global notification manager instance
 export const notificationManager = new LocalNotificationManager();
 
-// Simulate admin sending message to users
-export const simulateAdminMessage = (
-  content: string,
-  senderId: number,
-  senderName: string,
-  targetUsers?: number[]
-): void => {
-  const adminMessage: Omit<UserNotification, 'id' | 'timestamp'> = {
-    title: `Message from ${senderName}`,
-    message: content,
-    type: 'info',
-    read: false,
+// Simulate admin message and convert to notification
+export const simulateAdminMessage = (content: string, senderId: number, senderName: string, targetUsers?: number[]): void => {
+  const adminMessage: AdminMessage = {
+    id: Date.now().toString(),
+    title: 'Admin Message',
+    content,
     senderId,
     senderName,
-    action: {
-      label: 'View in Chat',
-      url: '/portal',
-    },
+    timestamp: new Date(),
+    targetUsers
   };
 
-  notificationManager.addNotification(adminMessage);
+  // Add to local notification manager
+  notificationManager.addNotification({
+    title: `📢 ${adminMessage.title}`,
+    message: adminMessage.content,
+    type: 'info',
+    read: false,
+    senderName: adminMessage.senderName
+  });
 };
 
-// Convert AdminMessage to UserNotification
-export const convertAdminMessageToNotification = (
-  adminMessage: AdminMessage
-): Omit<UserNotification, 'id' | 'timestamp'> => {
+export const convertAdminMessageToNotification = (adminMessage: AdminMessage): Omit<UserNotification, 'id' | 'timestamp'> => {
   return {
-    title: `Message from ${adminMessage.senderName}`,
+    title: `📢 ${adminMessage.title}`,
     message: adminMessage.content,
-    type: adminMessage.channel === 'urgent' ? 'error' : 
-          adminMessage.channel === 'announcement' ? 'warning' : 'info',
+    type: 'info',
     read: false,
-    senderId: adminMessage.senderId,
-    senderName: adminMessage.senderName,
-    action: {
-      label: 'View in Chat',
-      url: '/portal',
-    },
+    senderName: adminMessage.senderName
   };
 }; 

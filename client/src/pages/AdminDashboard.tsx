@@ -32,6 +32,12 @@ import {
   ListItemText,
   ListItemAvatar,
   ListItemSecondaryAction,
+  Container,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   AdminPanelSettings,
@@ -67,11 +73,13 @@ import {
   Done,
   Pending,
   Block,
+  Email,
 } from '@mui/icons-material';
 import { projectsService, tasksService, usersService } from '../services/apiService';
 import { Project, Task, User, TaskStats } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import EmailNotificationSettingsComponent from '../components/EmailNotificationSettings';
 
 const AdminDashboard: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -83,6 +91,7 @@ const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const theme = useTheme();
   const { user } = useAuth();
+  const [emailSettingsOpen, setEmailSettingsOpen] = useState(false);
 
   useEffect(() => {
     loadAdminData();
@@ -595,15 +604,24 @@ const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <Box>
-      <Fade in timeout={300}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Fade in timeout={500}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-            Welcome, Administrator! 👨‍💼
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-            System administration dashboard - Monitor team performance, manage projects, and oversee operations.
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+            <Dashboard sx={{ fontSize: 32, color: 'primary.main', mr: 2 }} />
+            <Typography variant="h4" sx={{ fontWeight: 600 }}>
+              Admin Dashboard
+            </Typography>
+            <Box sx={{ ml: 'auto' }}>
+              <Button
+                variant="outlined"
+                startIcon={<Email />}
+                onClick={() => setEmailSettingsOpen(true)}
+              >
+                Email Settings
+              </Button>
+            </Box>
+          </Box>
 
           {error && (
             <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>
@@ -677,7 +695,30 @@ const AdminDashboard: React.FC = () => {
           </Grid>
         </Box>
       </Fade>
-    </Box>
+
+      {/* Email Settings Dialog */}
+      <Dialog
+        open={emailSettingsOpen}
+        onClose={() => setEmailSettingsOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Email />
+            Email Notification Settings
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <EmailNotificationSettingsComponent />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEmailSettingsOpen(false)}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 };
 

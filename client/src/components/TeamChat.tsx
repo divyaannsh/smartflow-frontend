@@ -44,6 +44,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { usersService } from '../services/apiService';
 import { User } from '../types';
 import { simulateAdminMessage } from '../services/notificationService';
+import { notificationService } from '../services/notificationService';
 
 interface ChatMessage {
   id: string;
@@ -165,6 +166,26 @@ const TeamChat: React.FC<TeamChatProps> = ({ isOpen, onClose }) => {
         setTimeout(() => {
           setMessages(prev => [...prev, systemMessage]);
         }, 1000);
+
+        // If admin sends message in general channel, send email notification
+        if (user.role === 'admin' && selectedChannel === 'general') {
+          try {
+            // Get all user IDs for email notification
+            const allUserIds = users.map(u => u.id).filter(id => id !== user.id);
+            
+            if (allUserIds.length > 0) {
+              await notificationService.sendAdminMessageEmail(
+                `Admin Message - ${selectedChannel}`,
+                inputMessage,
+                allUserIds
+              );
+              console.log('Admin message email sent successfully');
+            }
+          } catch (emailError) {
+            console.error('Failed to send admin message email:', emailError);
+            // Don't fail the chat message if email fails
+          }
+        }
       }
       
       // If this is an admin message, send notifications to users
