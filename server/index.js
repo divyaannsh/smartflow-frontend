@@ -18,7 +18,11 @@ const PORT = process.env.PORT || 5000;
 // CORS configuration for production
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-app-name.vercel.app', 'https://your-app-name.vercel.app'] // Replace with your actual domain
+    ? [
+        'https://your-app-name.vercel.app', // Your Vercel domain
+        'https://your-app-name.netlify.app', // Netlify backup
+        'http://localhost:3000' // Keep localhost for development
+      ]
     : ['http://localhost:3000', 'http://localhost:3001'],
   credentials: true,
   optionsSuccessStatus: 200

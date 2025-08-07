@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "name": "smartflow-ai",
   "builds": [
     {
       "src": "server/index.js",
@@ -20,11 +21,20 @@
       "dest": "/server/index.js"
     },
     {
+      "src": "/uploads/(.*)",
+      "dest": "/server/index.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "/client/$1"
     }
   ],
   "env": {
     "NODE_ENV": "production"
+  },
+  "functions": {
+    "server/index.js": {
+      "maxDuration": 30
+    }
   }
 } 
