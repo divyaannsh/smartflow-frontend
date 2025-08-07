@@ -1,5 +1,4 @@
 import api from './apiService';
-import { Notification } from '../components/NotificationSystem';
 
 export interface AdminMessage {
   id: string;
