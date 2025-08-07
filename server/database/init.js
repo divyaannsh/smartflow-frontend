@@ -2,11 +2,17 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
-const dbPath = path.join(__dirname, 'project_manager.db');
+// Use /tmp directory for Vercel serverless environment
+const dbPath = process.env.NODE_ENV === 'production' 
+  ? '/tmp/project_manager.db'
+  : path.join(__dirname, 'project_manager.db');
+
 const db = new sqlite3.Database(dbPath);
 
 function initializeDatabase() {
   return new Promise((resolve, reject) => {
+    console.log('Initializing database at:', dbPath);
+    
     db.serialize(() => {
       // Create users table
       db.run(`
@@ -21,7 +27,14 @@ function initializeDatabase() {
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
-      `);
+      `, (err) => {
+        if (err) {
+          console.error('Error creating users table:', err);
+          reject(err);
+          return;
+        }
+        console.log('Users table created/verified');
+      });
 
       // Create projects table
       db.run(`
@@ -37,7 +50,14 @@ function initializeDatabase() {
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (created_by) REFERENCES users (id)
         )
-      `);
+      `, (err) => {
+        if (err) {
+          console.error('Error creating projects table:', err);
+          reject(err);
+          return;
+        }
+        console.log('Projects table created/verified');
+      });
 
       // Create tasks table
       db.run(`
@@ -59,7 +79,14 @@ function initializeDatabase() {
           FOREIGN KEY (assigned_to) REFERENCES users (id),
           FOREIGN KEY (created_by) REFERENCES users (id)
         )
-      `);
+      `, (err) => {
+        if (err) {
+          console.error('Error creating tasks table:', err);
+          reject(err);
+          return;
+        }
+        console.log('Tasks table created/verified');
+      });
 
       // Create comments table
       db.run(`
@@ -72,7 +99,14 @@ function initializeDatabase() {
           FOREIGN KEY (task_id) REFERENCES tasks (id),
           FOREIGN KEY (user_id) REFERENCES users (id)
         )
-      `);
+      `, (err) => {
+        if (err) {
+          console.error('Error creating comments table:', err);
+          reject(err);
+          return;
+        }
+        console.log('Comments table created/verified');
+      });
 
       // Create project_members table
       db.run(`
@@ -86,7 +120,14 @@ function initializeDatabase() {
           FOREIGN KEY (user_id) REFERENCES users (id),
           UNIQUE(project_id, user_id)
         )
-      `);
+      `, (err) => {
+        if (err) {
+          console.error('Error creating project_members table:', err);
+          reject(err);
+          return;
+        }
+        console.log('Project members table created/verified');
+      });
 
       // Insert default admin user
       const adminPassword = bcrypt.hashSync('admin123', 10);
@@ -227,7 +268,16 @@ function initializeDatabase() {
 
       db.run('PRAGMA foreign_keys = ON');
       
-      resolve();
+      // Add a final callback to resolve the promise after all operations
+      db.run('SELECT 1', (err) => {
+        if (err) {
+          console.error('Error in final database check:', err);
+          reject(err);
+          return;
+        }
+        console.log('Database initialization completed successfully');
+        resolve();
+      });
     });
   });
 }
