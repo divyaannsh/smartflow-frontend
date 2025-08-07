@@ -69,14 +69,20 @@ app.get('/api/debug/db', async (req, res) => {
     const { getDatabase } = require('./database/init');
     const db = getDatabase();
     if (db) {
-      db.get('SELECT 1 as test', (err, row) => {
-        if (err) {
-          console.error('Database connection test failed:', err);
-          res.status(500).json({ error: 'Database connection failed', details: err.message });
-        } else {
-          res.json({ status: 'Database connected', test: row });
-        }
-      });
+      if (typeof db.get === 'function') {
+        // SQLite database
+        db.get('SELECT 1 as test', (err, row) => {
+          if (err) {
+            console.error('Database connection test failed:', err);
+            res.status(500).json({ error: 'Database connection failed', details: err.message });
+          } else {
+            res.json({ status: 'Database connected', test: row });
+          }
+        });
+      } else {
+        // In-memory storage
+        res.json({ status: 'In-memory storage active', test: { test: 1 } });
+      }
     } else {
       res.status(500).json({ error: 'Database not initialized' });
     }
@@ -107,10 +113,20 @@ async function startServer() {
     console.log('Environment:', process.env.NODE_ENV || 'development');
     console.log('Port:', PORT);
     
-    // Initialize database
+    // Initialize database with timeout
     console.log('Initializing database...');
-    await initializeDatabase();
-    console.log('Database initialized successfully');
+    const dbInitPromise = initializeDatabase();
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database initialization timeout')), 10000)
+    );
+    
+    try {
+      await Promise.race([dbInitPromise, timeoutPromise]);
+      console.log('Database initialized successfully');
+    } catch (dbError) {
+      console.error('Database initialization failed, but continuing with server startup:', dbError);
+      // Continue with server startup even if database fails
+    }
     
     // Start server
     app.listen(PORT, () => {
@@ -120,19 +136,26 @@ async function startServer() {
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
-    process.exit(1);
+    // Don't exit process, let it continue
+    console.log('Server will continue without database initialization');
+    
+    // Start server anyway
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT} (without database)`);
+      console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+    });
   }
 }
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
-  process.exit(1);
+  // Don't exit process, let it continue
 });
 
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
+  // Don't exit process, let it continue
 });
 
 startServer(); 
