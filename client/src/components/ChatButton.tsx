@@ -7,12 +7,19 @@ import {
   SpeedDial,
   SpeedDialAction,
   SpeedDialIcon,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton,
+  Box,
+  Typography,
 } from '@mui/material';
 import {
   SmartToy,
   Chat,
   Group,
   Forum,
+  Close,
 } from '@mui/icons-material';
 import ChatBot from './ChatBot';
 import TeamChat from './TeamChat';
@@ -98,10 +105,30 @@ const ChatButton: React.FC = () => {
         userRole={user.role as 'admin' | 'manager' | 'member'}
       />
 
-      <TeamChat
-        isOpen={isTeamChatOpen}
+      <Dialog
+        open={isTeamChatOpen}
         onClose={handleCloseTeamChat}
-      />
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            height: '80vh',
+            maxHeight: '80vh',
+          },
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="h6">Team Chat</Typography>
+            <IconButton onClick={handleCloseTeamChat}>
+              <Close />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0 }}>
+          <TeamChat />
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
