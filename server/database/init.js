@@ -95,6 +95,13 @@ function initializeDatabase() {
         VALUES ('admin', 'admin@example.com', ?, 'Administrator', 'admin')
       `, [adminPassword]);
 
+      // Insert default user account
+      const userPassword = bcrypt.hashSync('user123', 10);
+      db.run(`
+        INSERT OR IGNORE INTO users (username, email, password, full_name, role)
+        VALUES ('user', 'user@example.com', ?, 'Regular User', 'member')
+      `, [userPassword]);
+
       // Insert sample team members
       const teamMembers = [
         {
