@@ -8,6 +8,72 @@ const dbPath = process.env.NODE_ENV === 'production'
   : path.join(__dirname, 'project_manager.db');
 
 let db;
+let inMemoryData = null;
+
+// In-memory data structure for Vercel fallback
+const createInMemoryData = () => {
+  const adminPassword = bcrypt.hashSync('admin123', 10);
+  const userPassword = bcrypt.hashSync('user123', 10);
+  
+  return {
+    users: [
+      {
+        id: 1,
+        username: 'admin',
+        email: 'admin@example.com',
+        password: adminPassword,
+        full_name: 'Administrator',
+        role: 'admin',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      },
+      {
+        id: 2,
+        username: 'user',
+        email: 'user@example.com',
+        password: userPassword,
+        full_name: 'Regular User',
+        role: 'member',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ],
+    projects: [
+      {
+        id: 1,
+        name: 'Website Redesign',
+        description: 'Complete redesign of company website',
+        status: 'active',
+        priority: 'high',
+        deadline: '2024-12-31',
+        created_by: 1,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ],
+    tasks: [
+      {
+        id: 1,
+        title: 'Design Homepage',
+        description: 'Create new homepage design',
+        status: 'todo',
+        priority: 'high',
+        deadline: '2024-09-15',
+        project_id: 1,
+        assigned_to: 2,
+        created_by: 1,
+        estimated_hours: 8.0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ],
+    comments: [],
+    project_members: [
+      { project_id: 1, user_id: 1, role: 'admin', joined_at: new Date().toISOString() },
+      { project_id: 1, user_id: 2, role: 'member', joined_at: new Date().toISOString() }
+    ]
+  };
+};
 
 function createDatabase() {
   return new Promise((resolve, reject) => {
@@ -32,7 +98,8 @@ function createDatabase() {
 function initializeDatabase() {
   return new Promise(async (resolve, reject) => {
     try {
-      // Create database connection
+      // Try to create SQLite database
+      console.log('Attempting to initialize SQLite database...');
       db = await createDatabase();
       
       console.log('Initializing database at:', dbPath);
@@ -179,51 +246,7 @@ function initializeDatabase() {
           }
         });
 
-        // Insert sample team members
-        const teamMembers = [
-          {
-            username: 'john.doe',
-            email: 'john.doe@example.com',
-            password: 'john123',
-            full_name: 'John Doe',
-            role: 'manager'
-          },
-          {
-            username: 'jane.smith',
-            email: 'jane.smith@example.com',
-            password: 'jane123',
-            full_name: 'Jane Smith',
-            role: 'member'
-          },
-          {
-            username: 'mike.wilson',
-            email: 'mike.wilson@example.com',
-            password: 'mike123',
-            full_name: 'Mike Wilson',
-            role: 'member'
-          },
-          {
-            username: 'sarah.jones',
-            email: 'sarah.jones@example.com',
-            password: 'sarah123',
-            full_name: 'Sarah Jones',
-            role: 'member'
-          }
-        ];
-
-        teamMembers.forEach(member => {
-          const hashedPassword = bcrypt.hashSync(member.password, 10);
-          db.run(`
-            INSERT OR IGNORE INTO users (username, email, password, full_name, role)
-            VALUES (?, ?, ?, ?, ?)
-          `, [member.username, member.email, hashedPassword, member.full_name, member.role], (err) => {
-            if (err) {
-              console.error(`Error inserting team member ${member.username}:`, err);
-            }
-          });
-        });
-
-        // Insert sample projects
+        // Insert sample data
         db.run(`
           INSERT OR IGNORE INTO projects (name, description, status, priority, deadline, created_by)
           VALUES ('Website Redesign', 'Complete redesign of company website', 'active', 'high', '2024-12-31', 1)
@@ -234,25 +257,6 @@ function initializeDatabase() {
         });
 
         db.run(`
-          INSERT OR IGNORE INTO projects (name, description, status, priority, deadline, created_by)
-          VALUES ('Mobile App Development', 'Develop new mobile application', 'active', 'critical', '2024-11-30', 1)
-        `, (err) => {
-          if (err) {
-            console.error('Error inserting sample project:', err);
-          }
-        });
-
-        db.run(`
-          INSERT OR IGNORE INTO projects (name, description, status, priority, deadline, created_by)
-          VALUES ('Database Migration', 'Migrate to new database system', 'active', 'medium', '2024-10-15', 1)
-        `, (err) => {
-          if (err) {
-            console.error('Error inserting sample project:', err);
-          }
-        });
-
-        // Insert sample tasks
-        db.run(`
           INSERT OR IGNORE INTO tasks (title, description, status, priority, deadline, project_id, assigned_to, created_by, estimated_hours)
           VALUES ('Design Homepage', 'Create new homepage design', 'todo', 'high', '2024-09-15', 1, 2, 1, 8.0)
         `, (err) => {
@@ -261,43 +265,6 @@ function initializeDatabase() {
           }
         });
 
-        db.run(`
-          INSERT OR IGNORE INTO tasks (title, description, status, priority, deadline, project_id, assigned_to, created_by, estimated_hours)
-          VALUES ('Implement User Authentication', 'Add login and registration features', 'in_progress', 'critical', '2024-09-20', 2, 3, 1, 12.0)
-        `, (err) => {
-          if (err) {
-            console.error('Error inserting sample task:', err);
-          }
-        });
-
-        db.run(`
-          INSERT OR IGNORE INTO tasks (title, description, status, priority, deadline, project_id, assigned_to, created_by, estimated_hours)
-          VALUES ('Database Schema Design', 'Design new database schema', 'review', 'medium', '2024-09-10', 3, 4, 1, 6.0)
-        `, (err) => {
-          if (err) {
-            console.error('Error inserting sample task:', err);
-          }
-        });
-
-        db.run(`
-          INSERT OR IGNORE INTO tasks (title, description, status, priority, deadline, project_id, assigned_to, created_by, estimated_hours)
-          VALUES ('API Development', 'Develop REST API endpoints', 'todo', 'high', '2024-09-25', 2, 2, 1, 16.0)
-        `, (err) => {
-          if (err) {
-            console.error('Error inserting sample task:', err);
-          }
-        });
-
-        db.run(`
-          INSERT OR IGNORE INTO tasks (title, description, status, priority, deadline, project_id, assigned_to, created_by, estimated_hours)
-          VALUES ('Testing and QA', 'Perform comprehensive testing', 'todo', 'medium', '2024-10-05', 1, 5, 1, 10.0)
-        `, (err) => {
-          if (err) {
-            console.error('Error inserting sample task:', err);
-          }
-        });
-
-        // Insert project members
         db.run(`
           INSERT OR IGNORE INTO project_members (project_id, user_id, role)
           VALUES (1, 1, 'admin')
@@ -309,61 +276,7 @@ function initializeDatabase() {
 
         db.run(`
           INSERT OR IGNORE INTO project_members (project_id, user_id, role)
-          VALUES (1, 2, 'manager')
-        `, (err) => {
-          if (err) {
-            console.error('Error inserting project member:', err);
-          }
-        });
-
-        db.run(`
-          INSERT OR IGNORE INTO project_members (project_id, user_id, role)
-          VALUES (1, 3, 'member')
-        `, (err) => {
-          if (err) {
-            console.error('Error inserting project member:', err);
-          }
-        });
-
-        db.run(`
-          INSERT OR IGNORE INTO project_members (project_id, user_id, role)
-          VALUES (2, 1, 'admin')
-        `, (err) => {
-          if (err) {
-            console.error('Error inserting project member:', err);
-          }
-        });
-
-        db.run(`
-          INSERT OR IGNORE INTO project_members (project_id, user_id, role)
-          VALUES (2, 2, 'manager')
-        `, (err) => {
-          if (err) {
-            console.error('Error inserting project member:', err);
-          }
-        });
-
-        db.run(`
-          INSERT OR IGNORE INTO project_members (project_id, user_id, role)
-          VALUES (2, 4, 'member')
-        `, (err) => {
-          if (err) {
-            console.error('Error inserting project member:', err);
-          }
-        });
-
-        db.run(`
-          INSERT OR IGNORE INTO project_members (project_id, user_id, role)
-          VALUES (3, 1, 'admin')
-        `, (err) => {
-          if (err) {
-            console.error('Error inserting project member:', err);
-          }
-        });
-
-        db.run(`
-          INSERT OR IGNORE INTO project_members (project_id, user_id, role)
-          VALUES (3, 5, 'member')
+          VALUES (1, 2, 'member')
         `, (err) => {
           if (err) {
             console.error('Error inserting project member:', err);
@@ -384,22 +297,62 @@ function initializeDatabase() {
         });
       });
     } catch (error) {
-      console.error('Error in initializeDatabase:', error);
-      reject(error);
+      console.error('SQLite initialization failed, falling back to in-memory storage:', error);
+      
+      // Fallback to in-memory storage for Vercel
+      console.log('Initializing in-memory storage for Vercel deployment...');
+      inMemoryData = createInMemoryData();
+      console.log('In-memory storage initialized successfully');
+      resolve();
     }
   });
 }
 
 function getDatabase() {
-  if (!db) {
-    console.error('Database not initialized. Call initializeDatabase() first.');
-    return null;
+  if (db) {
+    return db;
   }
-  return db;
+  if (inMemoryData) {
+    console.log('Using in-memory storage (Vercel fallback)');
+    return inMemoryData;
+  }
+  console.error('Database not initialized. Call initializeDatabase() first.');
+  return null;
+}
+
+// Helper functions for in-memory operations
+function findUserByUsername(username) {
+  if (!inMemoryData) return null;
+  return inMemoryData.users.find(user => user.username === username);
+}
+
+function findUserById(id) {
+  if (!inMemoryData) return null;
+  return inMemoryData.users.find(user => user.id === id);
+}
+
+function getAllUsers() {
+  if (!inMemoryData) return [];
+  return inMemoryData.users;
+}
+
+function getAllProjects() {
+  if (!inMemoryData) return [];
+  return inMemoryData.projects;
+}
+
+function getAllTasks() {
+  if (!inMemoryData) return [];
+  return inMemoryData.tasks;
 }
 
 module.exports = {
   initializeDatabase,
   getDatabase,
-  createDatabase
+  createDatabase,
+  findUserByUsername,
+  findUserById,
+  getAllUsers,
+  getAllProjects,
+  getAllTasks
 }; 
