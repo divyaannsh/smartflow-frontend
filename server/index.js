@@ -24,7 +24,8 @@ const corsOptions = {
         'https://jirasoftware-1ntd.vercel.app',
         'https://jirasoftware.vercel.app',
         'https://smartflow-ai.vercel.app',
-        'http://localhost:3000' // Keep localhost for development
+        'http://localhost:3000', // Allow localhost for local testing
+        'http://localhost:3001'  // Allow localhost for local testing
       ]
     : ['http://localhost:3000', 'http://localhost:3001'],
   credentials: true,
