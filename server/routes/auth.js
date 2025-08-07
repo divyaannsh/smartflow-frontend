@@ -25,6 +25,19 @@ const verifyToken = (req, res, next) => {
   }
 };
 
+// Debug endpoint to check users (remove in production)
+router.get('/debug/users', (req, res) => {
+  const db = getDatabase();
+  db.all('SELECT id, username, email, full_name, role FROM users', (err, users) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    console.log('All users in database:', users);
+    res.json({ users });
+  });
+});
+
 // Login
 router.post('/login', [
   body('username').notEmpty().withMessage('Username is required'),
@@ -33,10 +46,13 @@ router.post('/login', [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { username, password } = req.body;
+    console.log('Login attempt for username:', username);
+    
     const db = getDatabase();
     
     // Find user by username
@@ -46,12 +62,22 @@ router.post('/login', [
         return res.status(500).json({ error: 'Database error' });
       }
       
+      console.log('User found:', user ? 'Yes' : 'No');
+      if (user) {
+        console.log('User role:', user.role);
+      }
+      
       if (!user) {
+        console.log('No user found with username:', username);
         return res.status(401).json({ error: 'Invalid credentials' });
       }
       
       // Verify password
-      if (!bcrypt.compareSync(password, user.password)) {
+      const passwordMatch = bcrypt.compareSync(password, user.password);
+      console.log('Password match:', passwordMatch);
+      
+      if (!passwordMatch) {
+        console.log('Password verification failed for username:', username);
         return res.status(401).json({ error: 'Invalid credentials' });
       }
       
@@ -65,6 +91,8 @@ router.post('/login', [
         JWT_SECRET,
         { expiresIn: '24h' }
       );
+      
+      console.log('Login successful for user:', username, 'Role:', user.role);
       
       // Return user data (without password) and token
       const { password: _, ...userData } = user;
