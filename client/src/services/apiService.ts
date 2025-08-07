@@ -2,10 +2,10 @@
  import axios from 'axios';
 import { Project, Task, User, Comment, TaskStats, ProjectStats, UserWorkload } from '../types';
 
-// Use localhost when running locally, Vercel when deployed
+// Use localhost when running locally, current domain when deployed
 const API_BASE_URL = process.env.NODE_ENV === 'development' 
   ? 'http://localhost:5000/api'
-  : (process.env.REACT_APP_API_URL || 'https://jirasoftware-jvwt.vercel.app/api');
+  : (process.env.REACT_APP_API_URL || `${window.location.origin}/api`);
 
 const api = axios.create({
   baseURL: API_BASE_URL,

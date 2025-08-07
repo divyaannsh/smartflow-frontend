@@ -20,12 +20,12 @@ const PORT = process.env.PORT || 5000;
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
     ? [
-        process.env.FRONTEND_URL || 'https://jirasoftware-jvwt.vercel.app',
+        process.env.FRONTEND_URL || 'https://jirasoftware.vercel.app',
+        'https://jirasoftware.vercel.app',
         'https://jirasoftware-jvwt.vercel.app',
         'https://jirasoftware-5jad.vercel.app',
         'https://smartflowaiai.vercel.app',
         'https://jirasoftware-1ntd.vercel.app',
-        'https://jirasoftware.vercel.app',
         'https://smartflow-ai.vercel.app',
         'http://localhost:3000', // Allow localhost for local testing
         'http://localhost:3001'  // Allow localhost for local testing
