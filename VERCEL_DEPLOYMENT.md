@@ -38,23 +38,17 @@ Vercel will automatically detect your configuration from `vercel.json`, but veri
 Before deploying, add these environment variables in Vercel dashboard:
 
 ```env
-# JWT Configuration
+# JWT Configuration (Required)
 JWT_SECRET=your-super-secret-jwt-key-here
 
-# Email Configuration (Gmail)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-16-character-app-password
-FROM_EMAIL=your-email@gmail.com
-FROM_NAME=SmartFlow AI
-
-# Frontend URL (will be your Vercel domain)
+# Frontend URL (Required - will be your Vercel domain)
 FRONTEND_URL=https://your-app-name.vercel.app
 
-# Database (SQLite file will be created automatically)
+# Database (Optional - SQLite file will be created automatically)
 DB_PATH=./database/project_manager.db
 ```
+
+**Note**: Email functionality is temporarily disabled for quick deployment. You can add email variables later if needed.
 
 ### 1.4 Deploy
 

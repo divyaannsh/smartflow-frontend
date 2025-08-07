@@ -9,7 +9,8 @@ const authRoutes = require('./routes/auth');
 const projectsRoutes = require('./routes/projects');
 const tasksRoutes = require('./routes/tasks');
 const usersRoutes = require('./routes/users');
-const notificationsRoutes = require('./routes/notifications');
+// const notificationsRoutes = require('./routes/notifications'); // Temporarily disabled
+
 const { initializeDatabase } = require('./database/init');
 
 const app = express();
@@ -45,7 +46,7 @@ app.use('/api/projects', projectsRoutes);
 app.use('/api/tasks', tasksRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/notifications', notificationsRoutes);
+// app.use('/api/notifications', notificationsRoutes); // Temporarily disabled
 
 // Health check
 app.get('/api/health', (req, res) => {

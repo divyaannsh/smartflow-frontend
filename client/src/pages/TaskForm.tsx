@@ -34,7 +34,7 @@ import {
 } from '@mui/icons-material';
 import { tasksService, projectsService, usersService } from '../services/apiService';
 import { Task, Project, User } from '../types';
-import { notificationService } from '../services/notificationService';
+// import { notificationService } from '../services/notificationService'; // Temporarily disabled
 
 const TaskForm: React.FC = () => {
   const navigate = useNavigate();
@@ -152,16 +152,15 @@ const TaskForm: React.FC = () => {
       } else {
         const newTask = await tasksService.create(taskData);
         
-        // Send email notification if task is assigned to someone
-        if (taskData.assigned_to) {
-          try {
-            await notificationService.sendTaskAssignmentEmail(newTask.id, taskData.assigned_to);
-            console.log('Task assignment email sent successfully');
-          } catch (emailError) {
-            console.error('Failed to send task assignment email:', emailError);
-            // Don't fail the task creation if email fails
-          }
-        }
+        // Email notification temporarily disabled
+        // if (taskData.assigned_to) {
+        //   try {
+        //     await notificationService.sendTaskAssignmentEmail(newTask.id, taskData.assigned_to);
+        //     console.log('Task assignment email sent successfully');
+        //   } catch (emailError) {
+        //     console.error('Failed to send task assignment email:', emailError);
+        //   }
+        // }
       }
 
       navigate('/tasks');
