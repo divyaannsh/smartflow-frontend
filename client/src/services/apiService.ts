@@ -109,8 +109,11 @@ export const authService = {
       const response = await api.post('/auth/login', { username, password });
       return response.data;
     } catch (error) {
+      // In production, do not fallback to mock
+      if (process.env.NODE_ENV === 'production') {
+        throw error;
+      }
       console.log('Server unavailable, using mock login');
-      // Mock login for demo
       const user = mockUsers.find(u => u.username === username);
       if (user && (username === 'admin' && password === 'admin123' || username === 'user' && password === 'user123')) {
         const token = 'mock-jwt-token-' + Date.now();
@@ -131,6 +134,9 @@ export const authService = {
       const response = await api.post('/auth/register', userData);
       return response.data;
     } catch (error) {
+      if (process.env.NODE_ENV === 'production') {
+        throw error;
+      }
       throw new Error('Registration not available in demo mode');
     }
   },
@@ -140,7 +146,10 @@ export const authService = {
       const response = await api.get('/auth/me');
       return response.data;
     } catch (error) {
-      // Return mock user based on stored token
+      if (process.env.NODE_ENV === 'production') {
+        throw error;
+      }
+      // Return mock user based on stored token (dev only)
       const token = localStorage.getItem('token');
       if (token && token.includes('admin')) {
         return mockUsers[0];
@@ -156,6 +165,9 @@ export const authService = {
       const response = await api.post('/auth/refresh');
       return response.data;
     } catch (error) {
+      if (process.env.NODE_ENV === 'production') {
+        throw error;
+      }
       return { token: 'mock-refresh-token-' + Date.now() };
     }
   },
@@ -164,8 +176,12 @@ export const authService = {
     try {
       await api.post('/auth/logout');
     } catch (error) {
-      // Mock logout
-      localStorage.removeItem('token');
+      if (process.env.NODE_ENV !== 'production') {
+        // Mock logout
+        localStorage.removeItem('token');
+      } else {
+        throw error;
+      }
     }
   },
 
@@ -176,6 +192,9 @@ export const authService = {
         new_password: newPassword,
       });
     } catch (error) {
+      if (process.env.NODE_ENV === 'production') {
+        throw error;
+      }
       throw new Error('Password change not available in demo mode');
     }
   },

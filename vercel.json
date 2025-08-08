@@ -3,7 +3,7 @@
   "name": "smartflow-ai",
   "builds": [
     {
-      "src": "server/index.js",
+      "src": "server/serverless.js",
       "use": "@vercel/node"
     },
     {
@@ -17,11 +17,11 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/server/index.js"
+      "dest": "/server/serverless.js"
     },
     {
       "src": "/uploads/(.*)",
-      "dest": "/server/index.js"
+      "dest": "/server/serverless.js"
     },
     {
       "src": "/(.*)",

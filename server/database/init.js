@@ -2,10 +2,13 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
-// Use /tmp directory for Vercel serverless environment
-const dbPath = process.env.NODE_ENV === 'production' 
-  ? '/tmp/project_manager.db'
-  : path.join(__dirname, 'project_manager.db');
+// Prefer explicit DB file path (e.g., Railway volume) else fall back
+// In production without DB_FILE, use /tmp for serverless; in dev use local file
+const dbPath = process.env.DB_FILE
+  ? process.env.DB_FILE
+  : (process.env.NODE_ENV === 'production'
+      ? '/tmp/project_manager.db'
+      : path.join(__dirname, 'project_manager.db'));
 
 let db;
 let inMemoryData = null;
