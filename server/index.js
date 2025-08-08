@@ -104,20 +104,16 @@ async function startServer() {
       console.log(`🔍 Debug DB: http://localhost:${PORT}/api/debug/db`);
     });
     
-    // Try to initialize database in background (non-blocking)
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('Initializing database in background...');
-      const { initializeDatabase } = require('./database/init');
-      initializeDatabase()
-        .then(() => {
-          console.log('Database initialized successfully');
-        })
-        .catch((error) => {
-          console.error('Database initialization failed (non-critical):', error);
-        });
-    } else {
-      console.log('Skipping database initialization in production (using in-memory)');
-    }
+    // Initialize database (SQLite or in-memory fallback) in background (non-blocking)
+    console.log('Initializing database in background...');
+    const { initializeDatabase } = require('./database/init');
+    initializeDatabase()
+      .then(() => {
+        console.log('Database initialized successfully');
+      })
+      .catch((error) => {
+        console.error('Database initialization failed (non-critical):', error);
+      });
     
   } catch (error) {
     console.error('❌ Failed to start server:', error);

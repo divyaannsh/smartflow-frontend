@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
-const { getDatabase, findUserByUsername, getAllUsers } = require('../database/init');
+const { getDatabase, findUserByUsername, getAllUsers, findUserById } = require('../database/init');
 
 const router = express.Router();
 
@@ -157,8 +157,8 @@ router.post('/register', [
     }
 
     if (db && typeof db.run === 'function') {
-      // SQLite database
-      await new Promise((resolve, reject) => {
+      // SQLite database: create user, then return token + user
+      const insertedId = await new Promise((resolve, reject) => {
         db.run(
           'INSERT INTO users (username, email, password, full_name, role) VALUES (?, ?, ?, ?, ?)',
           [username, email, hashedPassword, full_name, role],
@@ -171,12 +171,67 @@ router.post('/register', [
           }
         );
       });
-    } else {
-      // In-memory storage - would need to implement user creation
-      return res.status(400).json({ message: 'Registration not supported in demo mode' });
-    }
 
-    res.status(201).json({ message: 'User registered successfully' });
+      const createdUser = await new Promise((resolve, reject) => {
+        db.get('SELECT id, username, email, full_name, role FROM users WHERE id = ?', [insertedId], (err, row) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(row);
+          }
+        });
+      });
+
+      const token = jwt.sign(
+        {
+          id: createdUser.id,
+          username: createdUser.username,
+          role: createdUser.role,
+          full_name: createdUser.full_name
+        },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+
+      return res.status(201).json({
+        message: 'User registered successfully',
+        token,
+        user: createdUser
+      });
+    } else {
+      // In-memory storage: create user and return token + user (non-persistent)
+      const users = getAllUsers();
+      const newId = users.length ? Math.max(...users.map(u => u.id)) + 1 : 1;
+      const newUser = {
+        id: newId,
+        username,
+        email,
+        password: hashedPassword,
+        full_name,
+        role,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      users.push(newUser);
+
+      const publicUser = { id: newUser.id, username, email, full_name, role };
+      const token = jwt.sign(
+        {
+          id: publicUser.id,
+          username: publicUser.username,
+          role: publicUser.role,
+          full_name: publicUser.full_name
+        },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+
+      return res.status(201).json({
+        message: 'User registered successfully',
+        token,
+        user: publicUser
+      });
+    }
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Registration failed', error: error.message });
@@ -189,6 +244,34 @@ router.get('/verify', verifyToken, (req, res) => {
     message: 'Token is valid', 
     user: req.user 
   });
+});
+
+// Current user route
+router.get('/me', verifyToken, async (req, res) => {
+  try {
+    const db = getDatabase();
+    const userId = req.user.id;
+
+    if (db && typeof db.get === 'function') {
+      const user = await new Promise((resolve, reject) => {
+        db.get('SELECT id, username, email, full_name, role FROM users WHERE id = ?', [userId], (err, row) => {
+          if (err) return reject(err);
+          resolve(row);
+        });
+      });
+
+      if (!user) return res.status(404).json({ message: 'User not found' });
+      return res.json(user);
+    } else {
+      const user = findUserById(userId);
+      if (!user) return res.status(404).json({ message: 'User not found' });
+      const { id, username, email, full_name, role } = user;
+      return res.json({ id, username, email, full_name, role });
+    }
+  } catch (error) {
+    console.error('Get current user error:', error);
+    res.status(500).json({ message: 'Failed to fetch current user' });
+  }
 });
 
 // Debug endpoint to check users (remove in production)

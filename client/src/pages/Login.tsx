@@ -74,6 +74,7 @@ const Login: React.FC = () => {
   const [adminLoginData, setAdminLoginData] = useState({ username: '', password: '' });
   const [userLoginData, setUserLoginData] = useState({ username: '', password: '' });
   const [registerData, setRegisterData] = useState({
+    username: '',
     full_name: '',
     email: '',
     password: '',
@@ -135,10 +136,29 @@ const Login: React.FC = () => {
     setError('');
     
     try {
-      // Register logic here
-      setError('Registration feature coming soon!');
+      // Call API to register, then login with the new account
+      const res = await fetch(`${process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : ''}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(registerData)
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message || data?.error || 'Registration failed');
+      }
+      // Persist token
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+      // Always login to populate AuthContext state
+      const user = await login(registerData.username, registerData.password);
+      if (user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/portal');
+      }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Registration failed');
+      setError(err.message || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -413,6 +433,21 @@ const Login: React.FC = () => {
                       </Box>
                       
                       <Box component="form" onSubmit={handleRegisterSubmit}>
+                        <TextField
+                          fullWidth
+                          label="Username"
+                          type="text"
+                          value={registerData.username}
+                          onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
+                          sx={{ mb: 3 }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <AccountCircle color="action" />
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
                         <TextField
                           fullWidth
                           label="Full Name"
