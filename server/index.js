@@ -1,139 +1,46 @@
-const express = require('express');
-const cors = require('cors');
 const path = require('path');
+const express = require('express');
+const app = require('./app');
 
-// Import routes
-const authRoutes = require('./routes/auth');
-const projectsRoutes = require('./routes/projects');
-const tasksRoutes = require('./routes/tasks');
-const usersRoutes = require('./routes/users');
-// const notificationsRoutes = require('./routes/notifications'); // Temporarily disabled
-
-const app = express();
-const PORT = process.env.PORT || 5000;
-
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// CORS configuration for production - use default if FRONTEND_URL not set
-const corsOptions = {
-  origin: process.env.NODE_ENV === 'production' 
-    ? [
-        process.env.FRONTEND_URL || 'https://jirasoftware.vercel.app',
-        'https://jirasoftware.vercel.app',
-        'https://jirasoftware-jvwt.vercel.app',
-        'https://jirasoftware-5jad.vercel.app',
-        'https://smartflowaiai.vercel.app',
-        'https://jirasoftware-1ntd.vercel.app',
-        'https://smartflow-ai.vercel.app',
-        'http://localhost:3000', // Allow localhost for local testing
-        'http://localhost:3001'  // Allow localhost for local testing
-      ]
-    : ['http://localhost:3000', 'http://localhost:3001'],
-  credentials: true,
-  optionsSuccessStatus: 200
-};
-
-app.use(cors(corsOptions));
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+// Initialize database in background (non-blocking)
+console.log('Initializing database in background...');
+const { initializeDatabase } = require('./database/init');
+initializeDatabase()
+  .then(() => {
+    console.log('Database initialized successfully');
+  })
+  .catch((error) => {
+    console.error('Database initialization failed (non-critical):', error);
   });
-});
 
-// Debug endpoint to check database connection
-app.get('/api/debug/db', async (req, res) => {
-  try {
-    const { getDatabase } = require('./database/init');
-    const db = getDatabase();
-    if (db) {
-      if (typeof db.get === 'function') {
-        // SQLite database
-        db.get('SELECT 1 as test', (err, row) => {
-          if (err) {
-            console.error('Database connection test failed:', err);
-            res.status(500).json({ error: 'Database connection failed', details: err.message });
-          } else {
-            res.json({ status: 'Database connected', test: row });
-          }
-        });
-      } else {
-        // In-memory storage
-        res.json({ status: 'In-memory storage active', test: { test: 1 } });
-      }
-    } else {
-      res.status(500).json({ error: 'Database not initialized' });
-    }
-  } catch (error) {
-    console.error('Debug endpoint error:', error);
-    res.status(500).json({ error: 'Debug endpoint failed', details: error.message });
-  }
-});
+// Serve static files from the React app in production
+if (process.env.NODE_ENV === 'production') {
+  console.log('Serving static files from client/build');
+  app.use(express.static(path.join(__dirname, '../client/build')));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/projects', projectsRoutes);
-app.use('/api/tasks', tasksRoutes);
-app.use('/api/users', usersRoutes);
-// app.use('/api/notifications', notificationsRoutes); // Temporarily disabled
-
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../client/build')));
-
-// Catch-all handler: send back React's index.html file for any non-API routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/build/index.html'));
-});
-
-// Initialize database and start server
-async function startServer() {
-  try {
-    console.log('Starting server initialization...');
-    console.log('Environment:', process.env.NODE_ENV || 'development');
-    console.log('Port:', PORT);
-    
-    // Start server immediately
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-      console.log(`🔍 Debug DB: http://localhost:${PORT}/api/debug/db`);
-    });
-    
-    // Initialize database (SQLite or in-memory fallback) in background (non-blocking)
-    console.log('Initializing database in background...');
-    const { initializeDatabase } = require('./database/init');
-    initializeDatabase()
-      .then(() => {
-        console.log('Database initialized successfully');
-      })
-      .catch((error) => {
-        console.error('Database initialization failed (non-critical):', error);
-      });
-    
-  } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    // Start server anyway
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT} (with error handling)`);
-      console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-    });
-  }
+  // Handle React routing, return all requests to React app
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+  });
 }
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-  // Don't exit process, let it continue
+// Get port from environment variable or default to 5000
+const PORT = process.env.PORT || 5000;
+
+// Start server
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Health check available at: http://localhost:${PORT}/api/health`);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  // Don't exit process, let it continue
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  process.exit(0);
 });
 
-startServer(); 
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully');
+  process.exit(0);
+}); 
