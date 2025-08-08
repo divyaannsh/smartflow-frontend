@@ -1,308 +1,248 @@
-# 🚀 SmartFlow AI - Professional Jira Alternative
+# SmartFlow AI - Full Stack Project Management
 
-A modern, intelligent project management platform built with React, Node.js, and Material-UI.
+A complete project management application with user authentication, task assignment, and real-time collaboration.
 
-![SmartFlow AI](https://img.shields.io/badge/React-18.2.0-blue)
+## 🏗️ Project Structure
 
-## ✨ Features
+```
+smartflow-fullstack/
+├── frontend/          # React TypeScript frontend
+├── backend/           # Node.js Express backend
+├── package.json       # Root package.json for workspace management
+└── README.md         # This file
+```
 
-### 🎯 **Core Project Management**
-- **Project Creation & Management**: Create, edit, and organize projects with detailed information
-- **Task Management**: Comprehensive task creation, assignment, and tracking
-- **User Management**: Role-based access control (Admin, Manager, Member)
-- **Real-time Progress Tracking**: Visual progress indicators and status updates
-
-### 📊 **Advanced Dashboard**
-- **Overview Statistics**: Key metrics and KPIs at a glance
-- **Project Progress**: Visual progress bars and completion tracking
-- **Task Analytics**: Detailed task statistics and performance metrics
-- **Team Workload**: User workload distribution and capacity planning
-
-### 🎨 **Modern UI/UX**
-- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
-- **Material Design**: Beautiful, intuitive interface using Material-UI
-- **Dark/Light Theme**: Customizable theme options
-- **Interactive Components**: Hover effects, animations, and smooth transitions
-
-### 🔧 **Task Management Features**
-- **Kanban Board**: Drag-and-drop task management with visual columns
-- **Task Details**: Comprehensive task information with descriptions, deadlines, and priorities
-- **Status Workflow**: Automated status progression (To Do → In Progress → Review → Done)
-- **Priority Levels**: Critical, High, Medium, Low priority management
-- **Time Tracking**: Built-in timer for tracking actual vs estimated hours
-- **Comments System**: Real-time collaboration with threaded comments
-
-### 👥 **Team Collaboration**
-- **User Profiles**: Detailed user profiles with role management
-- **Task Assignment**: Easy task assignment with user avatars
-- **Project Teams**: Team member management per project
-- **Activity Tracking**: Comprehensive activity logs and history
-
-### 📈 **Analytics & Reporting**
-- **Project Statistics**: Detailed project performance metrics
-- **Task Analytics**: Time tracking, completion rates, and efficiency metrics
-- **User Performance**: Individual and team performance tracking
-- **Custom Reports**: Generate detailed reports and insights
-
-### 🔔 **Notification System**
-- **Real-time Notifications**: Instant updates for task assignments and status changes
-- **Smart Alerts**: Deadline reminders and priority notifications
-- **Unread Count**: Visual indicators for new notifications
-- **Actionable Notifications**: Click to navigate directly to relevant items
-
-### 🛡️ **Security & Authentication**
-- **User Authentication**: Secure login system with session management
-- **Role-based Access**: Admin, Manager, and Member permissions
-- **Data Protection**: Secure API endpoints and data validation
-- **Session Management**: Automatic logout and security features
-
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-- SQLite (included)
+- Node.js >= 16.0.0
+- npm >= 8.0.0
 
 ### Installation
 
 1. **Clone the repository**
-   ```bash
-   git clone https://github.com/divyaannsh/Jirasoftware.git
-   cd Jirasoftware
-   ```
+```bash
+git clone <your-repo-url>
+cd smartflow-fullstack
+```
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+2. **Install all dependencies**
+```bash
+npm run install-all
+```
 
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
+3. **Start development servers**
+```bash
+npm run dev
+```
 
-4. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:5000
-
-### Default Login Credentials
-- **Username**: admin
-- **Password**: admin123
+This will start:
+- Backend on `http://localhost:5000`
+- Frontend on `http://localhost:3000`
 
 ## 📁 Project Structure
 
+### Frontend (`/frontend`)
+- **React 18** with TypeScript
+- **React Router** for navigation
+- **Axios** for API communication
+- **Responsive design** with modern UI
+
+### Backend (`/backend`)
+- **Node.js** with Express
+- **SQLite** database (with in-memory fallback)
+- **JWT** authentication
+- **RESTful API** endpoints
+
+## 🔧 Development
+
+### Available Scripts
+
+```bash
+# Install all dependencies
+npm run install-all
+
+# Start both frontend and backend in development
+npm run dev
+
+# Start only backend
+npm run dev:backend
+
+# Start only frontend
+npm run dev:frontend
+
+# Build frontend for production
+npm run build
+
+# Run tests
+npm run test
 ```
-jira/
-├── client/                 # React Frontend
-│   ├── src/
-│   │   ├── components/    # Reusable UI components
-│   │   ├── pages/        # Application pages
-│   │   ├── contexts/     # React contexts
-│   │   ├── services/     # API services
-│   │   └── types/        # TypeScript type definitions
-│   └── public/           # Static assets
-├── server/               # Node.js Backend
-│   ├── routes/          # API routes
-│   ├── database/        # Database files
-│   └── index.js         # Server entry point
-└── README.md           # This file
-```
-
-## 🎯 Key Features in Detail
-
-### **Project Management**
-- Create and manage multiple projects
-- Set project priorities and deadlines
-- Track project progress with visual indicators
-- Assign team members to projects
-- Project-specific task management
-
-### **Task Management**
-- **Kanban Board**: Visual task management with drag-and-drop
-- **Task Details**: Comprehensive task information
-- **Status Workflow**: Automated progression through task states
-- **Time Tracking**: Built-in timer for accurate time tracking
-- **Comments**: Real-time collaboration with threaded comments
-- **Attachments**: File upload and management (coming soon)
-
-### **User Management**
-- **Role-based Access**: Admin, Manager, Member roles
-- **User Profiles**: Detailed user information and statistics
-- **Team Assignment**: Easy task and project assignment
-- **Performance Tracking**: Individual and team metrics
-
-### **Dashboard & Analytics**
-- **Overview Dashboard**: Key metrics and KPIs
-- **Project Analytics**: Detailed project performance
-- **Task Statistics**: Time tracking and completion rates
-- **User Workload**: Team capacity and workload distribution
-
-### **Notification System**
-- **Real-time Updates**: Instant notifications for changes
-- **Smart Filtering**: Priority-based notification management
-- **Actionable Alerts**: Direct navigation to relevant items
-- **Unread Tracking**: Visual indicators for new notifications
-
-## 🛠️ Technology Stack
-
-### **Frontend**
-- **React 18**: Modern React with hooks and functional components
-- **TypeScript**: Type-safe development
-- **Material-UI 5**: Professional UI components
-- **React Router**: Client-side routing
-- **Axios**: HTTP client for API calls
-
-### **Backend**
-- **Node.js**: Server-side JavaScript runtime
-- **Express.js**: Web application framework
-- **SQLite**: Lightweight database
-- **JWT**: JSON Web Token authentication
-- **CORS**: Cross-origin resource sharing
-
-### **Development Tools**
-- **ESLint**: Code linting and formatting
-- **Prettier**: Code formatting
-- **Concurrently**: Run multiple commands simultaneously
-- **Nodemon**: Development server with auto-restart
-
-## 🎨 UI/UX Features
-
-### **Modern Design**
-- Clean, professional interface
-- Consistent color scheme and typography
-- Responsive design for all devices
-- Smooth animations and transitions
-
-### **User Experience**
-- Intuitive navigation and workflows
-- Quick actions and shortcuts
-- Contextual help and tooltips
-- Progressive disclosure of information
-
-### **Accessibility**
-- Keyboard navigation support
-- Screen reader compatibility
-- High contrast mode support
-- Responsive design for all screen sizes
-
-## 🔧 Configuration
 
 ### Environment Variables
-Create a `.env` file in the root directory:
 
+#### Frontend (`.env`)
 ```env
-# Server Configuration
-PORT=5000
-NODE_ENV=development
-
-# Database Configuration
-DB_PATH=./server/database/project_manager.db
-
-# JWT Configuration
-JWT_SECRET=your-secret-key
-JWT_EXPIRES_IN=24h
+REACT_APP_API_URL=https://your-backend-url.com/api
 ```
 
-### Customization
-- **Theme**: Modify colors and styling in `client/src/theme/`
-- **API**: Configure endpoints in `client/src/services/apiService.ts`
-- **Database**: Modify schema in `server/database/init.js`
-
-## 📊 Performance Features
-
-### **Optimization**
-- Lazy loading of components
-- Efficient state management
-- Optimized database queries
-- Caching strategies
-
-### **Scalability**
-- Modular architecture
-- RESTful API design
-- Database optimization
-- Horizontal scaling support
-
-## 🔒 Security Features
-
-### **Authentication**
-- JWT-based authentication
-- Secure password handling
-- Session management
-- Role-based access control
-
-### **Data Protection**
-- Input validation and sanitization
-- SQL injection prevention
-- XSS protection
-- CORS configuration
+#### Backend (`.env`)
+```env
+NODE_ENV=production
+JWT_SECRET=your-super-secure-secret-key
+PORT=5000
+```
 
 ## 🚀 Deployment
 
-### **Production Build**
-```bash
-# Build the frontend
-cd client
-npm run build
+### Backend Deployment (Render)
 
-# Start the production server
-cd ../server
-npm start
-```
+1. **Connect your GitHub repo to Render**
+2. **Create a new Web Service**
+3. **Configure the service:**
+   - **Root Directory**: `backend`
+   - **Build Command**: `npm install`
+   - **Start Command**: `node index.js`
+   - **Environment Variables**:
+     ```
+     NODE_ENV=production
+     JWT_SECRET=smartflow-jwt-secret-key-2024-production
+     PORT=8080
+     ```
 
-### **Docker Deployment**
-```dockerfile
-# Dockerfile example
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
-EXPOSE 5000
-CMD ["npm", "start"]
-```
+### Frontend Deployment (Vercel)
+
+1. **Connect your GitHub repo to Vercel**
+2. **Configure the project:**
+   - **Framework Preset**: Other
+   - **Root Directory**: `frontend`
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `build`
+   - **Environment Variables**:
+     ```
+     REACT_APP_API_URL=https://your-backend-url.onrender.com/api
+     ```
+
+## 🔐 Authentication
+
+### Default Users (for testing)
+- **Admin**: `admin` / `admin123`
+- **User**: `user` / `user123`
+
+### Registration
+New users can register with:
+- Username
+- Email
+- Password
+- Full Name
+- Role (admin/manager/member)
+
+## 📊 Features
+
+### Admin Features
+- ✅ User management
+- ✅ Project creation and management
+- ✅ Task assignment and tracking
+- ✅ Dashboard with analytics
+- ✅ User role management
+
+### User Features
+- ✅ View assigned tasks
+- ✅ Update task progress
+- ✅ View project details
+- ✅ Personal dashboard
+
+### Core Features
+- ✅ User authentication (JWT)
+- ✅ Task assignment system
+- ✅ Project management
+- ✅ Real-time updates
+- ✅ Responsive design
+- ✅ Role-based access control
+
+## 🔌 API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/me` - Get current user
+- `POST /api/auth/verify` - Verify token
+
+### Projects
+- `GET /api/projects` - Get all projects
+- `POST /api/projects` - Create project
+- `GET /api/projects/:id` - Get project details
+- `PUT /api/projects/:id` - Update project
+- `DELETE /api/projects/:id` - Delete project
+
+### Tasks
+- `GET /api/tasks` - Get all tasks
+- `POST /api/tasks` - Create task
+- `GET /api/tasks/:id` - Get task details
+- `PUT /api/tasks/:id` - Update task
+- `DELETE /api/tasks/:id` - Delete task
+- `GET /api/tasks/user/:userId` - Get user's tasks
+
+### Users
+- `GET /api/users` - Get all users
+- `GET /api/users/:id` - Get user details
+- `PUT /api/users/:id` - Update user
+- `DELETE /api/users/:id` - Delete user
+
+## 🛠️ Technology Stack
+
+### Frontend
+- **React 18** - UI framework
+- **TypeScript** - Type safety
+- **React Router** - Navigation
+- **Axios** - HTTP client
+- **CSS3** - Styling
+
+### Backend
+- **Node.js** - Runtime
+- **Express** - Web framework
+- **SQLite** - Database
+- **JWT** - Authentication
+- **bcryptjs** - Password hashing
+- **express-validator** - Input validation
+
+## 🔍 Troubleshooting
+
+### Common Issues
+
+1. **Backend not starting**
+   - Check if port 5000 is available
+   - Verify all dependencies are installed
+   - Check environment variables
+
+2. **Frontend can't connect to backend**
+   - Verify backend is running on port 5000
+   - Check CORS configuration
+   - Verify API URL in frontend
+
+3. **Database issues**
+   - Check if SQLite is properly initialized
+   - Verify database file permissions
+   - Check database path configuration
+
+### Development Tips
+
+- Use `npm run dev` to start both servers
+- Backend logs will show API requests
+- Frontend console will show API calls
+- Check browser network tab for API errors
+
+## 📝 License
+
+This project is licensed under the MIT License.
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-## 📝 License
+## 📞 Support
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-For support and questions:
-- Create an issue in the GitHub repository
-- Contact the development team
-- Check the documentation
-
-## 🎯 Roadmap
-
-### **Upcoming Features**
-- [ ] File attachment system
-- [ ] Advanced reporting and analytics
-- [ ] Mobile app (React Native)
-- [ ] Real-time collaboration
-- [ ] Advanced search and filtering
-- [ ] Email notifications
-- [ ] Calendar integration
-- [ ] API documentation
-
-### **Enhancements**
-- [ ] Dark mode toggle
-- [ ] Custom themes
-- [ ] Advanced permissions
-- [ ] Audit logging
-- [ ] Data export/import
-- [ ] Multi-language support
-
----
-
-**Built with ❤️ using React, TypeScript, and Material-UI**
-
-*Perfect for teams looking for a professional, feature-rich project management solution.* 
+For support, please open an issue in the GitHub repository. 
