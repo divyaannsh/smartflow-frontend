@@ -35,6 +35,8 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { usersService } from '../services/apiService';
+import { notificationService } from '../services/notificationService';
+import { useAuth } from '../contexts/AuthContext';
 import { User, UserWorkload } from '../types';
 
 const Users: React.FC = () => {
@@ -47,6 +49,13 @@ const Users: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
+  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+  const [messageText, setMessageText] = useState('');
+  const [messageTarget, setMessageTarget] = useState<User | null>(null);
+  const [announceDialogOpen, setAnnounceDialogOpen] = useState(false);
+  const [announceTitle, setAnnounceTitle] = useState('General Announcement');
+  const [announceText, setAnnounceText] = useState('');
 
   useEffect(() => {
     loadUsers();
@@ -208,7 +217,7 @@ const Users: React.FC = () => {
             </Box>
           )}
 
-          <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+          <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
             <Button
               size="small"
               variant="outlined"
@@ -223,6 +232,19 @@ const Users: React.FC = () => {
             >
               Workload
             </Button>
+            {currentUser?.role === 'admin' && (
+              <Button
+                size="small"
+                variant="contained"
+                onClick={() => {
+                  setMessageTarget(user);
+                  setMessageText('');
+                  setMessageDialogOpen(true);
+                }}
+              >
+                Message
+              </Button>
+            )}
           </Box>
         </CardContent>
       </Card>
@@ -246,13 +268,23 @@ const Users: React.FC = () => {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4">Team Members</Typography>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => navigate('/users/new')}
-        >
-          Add Member
-        </Button>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          {currentUser?.role === 'admin' && (
+            <Button
+              variant="outlined"
+              onClick={() => setAnnounceDialogOpen(true)}
+            >
+              Announce
+            </Button>
+          )}
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => navigate('/users/new')}
+          >
+            Add Member
+          </Button>
+        </Box>
       </Box>
 
       {error && (
@@ -333,6 +365,90 @@ const Users: React.FC = () => {
           </Button>
           <Button onClick={handleDeleteUser} color="error" variant="contained">
             Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Admin direct message dialog */}
+      <Dialog open={messageDialogOpen} onClose={() => setMessageDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Message {messageTarget?.full_name}</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            placeholder={`Write a message to ${messageTarget?.full_name || 'user'}...`}
+            value={messageText}
+            onChange={(e) => setMessageText(e.target.value)}
+            autoFocus
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setMessageDialogOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            disabled={!messageText.trim() || !messageTarget}
+            onClick={async () => {
+              try {
+                await notificationService.sendAdminMessageEmail(
+                  'Direct Message',
+                  messageText,
+                  [messageTarget!.id]
+                );
+                setMessageDialogOpen(false);
+                setMessageText('');
+              } catch (e) {
+                setError('Failed to send message');
+              }
+            }}
+          >
+            Send
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* General announcement dialog */}
+      <Dialog open={announceDialogOpen} onClose={() => setAnnounceDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>General Announcement</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Title"
+            value={announceTitle}
+            onChange={(e) => setAnnounceTitle(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            placeholder="Write your announcement..."
+            value={announceText}
+            onChange={(e) => setAnnounceText(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAnnounceDialogOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            disabled={!announceTitle.trim() || !announceText.trim()}
+            onClick={async () => {
+              try {
+                const allUserIds = users.map(u => u.id);
+                await notificationService.sendAdminMessageEmail(
+                  announceTitle,
+                  announceText,
+                  allUserIds,
+                  true
+                );
+                setAnnounceDialogOpen(false);
+                setAnnounceText('');
+              } catch (e) {
+                setError('Failed to send announcement');
+              }
+            }}
+          >
+            Send to Everyone
           </Button>
         </DialogActions>
       </Dialog>

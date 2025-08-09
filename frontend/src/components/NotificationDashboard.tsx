@@ -45,24 +45,77 @@ const NotificationDashboard: React.FC<NotificationDashboardProps> = ({
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
+    // Load server notifications once on mount
+    (async () => {
+      try {
+        const apiModule = await import('../services/apiService');
+        const res = await (apiModule as any).default.get('/notifications');
+        const serverNotifs: UserNotification[] = res.data.map((n: any) => ({
+          id: String(n.id),
+          title: n.title,
+          message: n.message,
+          type: n.type,
+          read: n.read,
+          timestamp: new Date(n.timestamp),
+          senderName: n.senderName,
+        }));
+        // Merge server notifications into local manager for unified display
+        serverNotifs.forEach((n) => {
+          notificationManager.addNotification({
+            title: n.title,
+            message: n.message,
+            type: n.type,
+            read: n.read,
+            senderName: n.senderName,
+            timestamp: n.timestamp,
+          });
+        });
+      } catch {}
+    })();
+
     // Subscribe to notification changes
     const unsubscribe = notificationManager.subscribe((allNotifications) => {
-      const filteredNotifications = showUnreadOnly 
+      const filtered = showUnreadOnly 
         ? allNotifications.filter(n => !n.read)
         : allNotifications;
-      
-      setNotifications(filteredNotifications.slice(0, maxNotifications));
+      const sorted = [...filtered].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      setNotifications(sorted.slice(0, maxNotifications));
     });
 
-    // Load initial notifications
+    // Connect SSE for real-time updates
+    let eventSource: EventSource | null = null;
+    (async () => {
+      try {
+        const apiModule = await import('../services/apiService');
+        const baseURL = (apiModule as any).default.defaults.baseURL?.replace(/\/api$/, '') || '';
+        eventSource = new EventSource(`${baseURL}/api/notifications/stream`);
+        eventSource.addEventListener('notification', (e: MessageEvent) => {
+          try {
+            const n = JSON.parse(e.data);
+            notificationManager.addNotification({
+              title: n.title,
+              message: n.message,
+              type: n.type,
+              read: false,
+              senderName: n.senderName,
+            });
+          } catch {}
+        });
+      } catch {}
+    })();
+
+    // Initial sync from local
     const allNotifications = notificationManager.getNotifications();
-    const filteredNotifications = showUnreadOnly 
+    const filtered = showUnreadOnly 
       ? allNotifications.filter(n => !n.read)
       : allNotifications;
-    
-    setNotifications(filteredNotifications.slice(0, maxNotifications));
+    const sorted = [...filtered].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    setNotifications(sorted.slice(0, maxNotifications));
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      if (eventSource) eventSource.close();
+    };
   }, [maxNotifications, showUnreadOnly]);
 
   const handleMarkAsRead = (notificationId: string) => {
@@ -85,6 +138,8 @@ const NotificationDashboard: React.FC<NotificationDashboardProps> = ({
         return <Warning color="warning" />;
       case 'error':
         return <Error color="error" />;
+      case 'general':
+        return <Notifications color="info" />;
       default:
         return <Info color="info" />;
     }
@@ -178,6 +233,12 @@ const NotificationDashboard: React.FC<NotificationDashboardProps> = ({
                       >
                         {notification.title}
                       </Typography>
+                      {notification.type === 'personal' && (
+                        <Chip size="small" label="Personal" color="primary" variant="outlined" />
+                      )}
+                      {notification.type === 'general' && (
+                        <Chip size="small" label="General" color="info" variant="outlined" />
+                      )}
                       {!notification.read && (
                         <Chip
                           label="New"

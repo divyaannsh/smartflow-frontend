@@ -202,6 +202,28 @@ function initializeDatabase() {
           console.log('Comments table created/verified');
         });
 
+        // Create notifications table
+        db.run(`
+          CREATE TABLE IF NOT EXISTS notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            message TEXT NOT NULL,
+            type TEXT DEFAULT 'personal',
+            read INTEGER DEFAULT 0,
+            sender_id INTEGER,
+            sender_name TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+          )
+        `, (err) => {
+          if (err) {
+            console.error('Error creating notifications table:', err);
+            reject(err);
+            return;
+          }
+          console.log('Notifications table created/verified');
+        });
         // Create project_members table
         db.run(`
           CREATE TABLE IF NOT EXISTS project_members (

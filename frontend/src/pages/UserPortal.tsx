@@ -63,6 +63,7 @@ import {
   Lightbulb,
 } from '@mui/icons-material';
 import { projectsService, tasksService, usersService } from '../services/apiService';
+import NotificationDashboard from '../components/NotificationDashboard';
 import { Project, Task, User, TaskStats } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -620,6 +621,9 @@ const UserPortal: React.FC = () => {
           <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
             Your personal workspace - Track your progress, manage deadlines, and stay productive.
           </Typography>
+
+          {/* Show recent notifications for users too; fetches on mount so refresh shows latest */}
+          <NotificationDashboard maxNotifications={5} showUnreadOnly={false} />
 
           {error && (
             <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>

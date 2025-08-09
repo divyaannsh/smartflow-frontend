@@ -4,7 +4,11 @@ const { getDatabase } = require('../database/init');
 const emailService = require('../services/emailService');
 const router = express.Router();
 
-// Middleware to verify JWT token
+// Middleware to verify JWT token (aligned with auth.js)
+const JWT_SECRET = process.env.JWT_SECRET || 'smartflow-ai-default-secret-key-2024';
+// SSE clients per user
+const sseClients = new Map();
+
 const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   
@@ -14,7 +18,7 @@ const verifyToken = (req, res, next) => {
   
   try {
     const jwt = require('jsonwebtoken');
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
     next();
   } catch (error) {
@@ -175,7 +179,7 @@ router.post('/admin-message', verifyToken, [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { title, content, userIds } = req.body;
+    const { title, content, userIds, isGeneral } = req.body;
     const db = getDatabase();
 
     // Get sender details
@@ -205,7 +209,53 @@ router.post('/admin-message', verifyToken, [
         };
 
         try {
-          // Send emails to all users
+          // Insert in-app notifications and push via SSE
+          const db2 = getDatabase();
+          const insertStmt = db2.prepare(`
+            INSERT INTO notifications (user_id, title, message, type, read, sender_id, sender_name)
+            VALUES (?, ?, ?, 'info', 0, ?, ?)
+          `);
+          const boxTitle = isGeneral ? `📣 ${title}` : `📢 ${title}`;
+          const nType = isGeneral ? 'general' : 'personal';
+          users.forEach(u => insertStmt.run([u.id, boxTitle, content, nType, sender.id, sender.full_name], function() {
+            const set = sseClients.get(u.id);
+            if (set) {
+              const payload = JSON.stringify({
+                id: this.lastID,
+                title: boxTitle,
+                message: content,
+                type: nType,
+                read: false,
+                timestamp: new Date().toISOString(),
+                senderName: sender.full_name
+              });
+              for (const client of set) {
+                client.write(`event: notification\n`);
+                client.write(`data: ${payload}\n\n`);
+              }
+            }
+
+            // Keep only latest 5 notifications per user (delete older ones)
+            db2.run(
+              `DELETE FROM notifications 
+               WHERE user_id = ? 
+                 AND id NOT IN (
+                   SELECT id FROM notifications 
+                   WHERE user_id = ? 
+                   ORDER BY created_at DESC, id DESC 
+                   LIMIT 5
+                 )`,
+              [u.id, u.id],
+              (err) => {
+                if (err) {
+                  console.error('Failed pruning old notifications for user', u.id, err);
+                }
+              }
+            );
+          }));
+          insertStmt.finalize();
+
+          // Send emails to all users as well
           const emailPromises = users.map(user => 
             emailService.sendAdminMessageEmail(user.email, user.full_name, messageData)
           );
@@ -213,7 +263,7 @@ router.post('/admin-message', verifyToken, [
           await Promise.all(emailPromises);
 
           res.json({ 
-            message: 'Admin message emails sent successfully',
+            message: 'Admin message sent (email + in-app)',
             sentTo: users.length,
             users: users.map(u => ({ id: u.id, email: u.email, name: u.full_name }))
           });
@@ -409,3 +459,100 @@ router.get('/settings', verifyToken, async (req, res) => {
 });
 
 module.exports = router; 
+
+// In-app notifications API
+router.get('/', verifyToken, (req, res) => {
+  try {
+    const db = getDatabase();
+    db.all(
+      'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 100',
+      [req.user.id],
+      (err, rows) => {
+        if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ error: 'Database error' });
+        }
+        res.json(rows.map(r => ({
+          id: r.id,
+          title: r.title,
+          message: r.message,
+          type: r.type,
+          read: !!r.read,
+          timestamp: r.created_at,
+          senderName: r.sender_name,
+        })));
+      }
+    );
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.put('/:id/read', verifyToken, (req, res) => {
+  try {
+    const db = getDatabase();
+    db.run('UPDATE notifications SET read = 1 WHERE id = ? AND user_id = ?', [req.params.id, req.user.id], function(err) {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      if (this.changes === 0) return res.status(404).json({ error: 'Notification not found' });
+      res.json({ message: 'Marked as read' });
+    });
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.put('/read-all', verifyToken, (req, res) => {
+  try {
+    const db = getDatabase();
+    db.run('UPDATE notifications SET read = 1 WHERE user_id = ?', [req.user.id], function(err) {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.json({ message: 'All marked as read' });
+    });
+  } catch (error) {
+    console.error('Error marking all as read:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.delete('/:id', verifyToken, (req, res) => {
+  try {
+    const db = getDatabase();
+    db.run('DELETE FROM notifications WHERE id = ? AND user_id = ?', [req.params.id, req.user.id], function(err) {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      if (this.changes === 0) return res.status(404).json({ error: 'Notification not found' });
+      res.json({ message: 'Notification deleted' });
+    });
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// SSE stream
+router.get('/stream', verifyToken, (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  const userId = req.user.id;
+  if (!sseClients.has(userId)) sseClients.set(userId, new Set());
+  const clientSet = sseClients.get(userId);
+  clientSet.add(res);
+
+  req.on('close', () => {
+    clientSet.delete(res);
+    if (clientSet.size === 0) sseClients.delete(userId);
+  });
+});

@@ -6,7 +6,7 @@ const authRoutes = require('./routes/auth');
 const projectsRoutes = require('./routes/projects');
 const tasksRoutes = require('./routes/tasks');
 const usersRoutes = require('./routes/users');
-// const notificationsRoutes = require('./routes/notifications'); // Temporarily disabled
+const notificationsRoutes = require('./routes/notifications');
 
 const app = express();
 
@@ -78,7 +78,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectsRoutes);
 app.use('/api/tasks', tasksRoutes);
 app.use('/api/users', usersRoutes);
-// app.use('/api/notifications', notificationsRoutes); // Temporarily disabled
+app.use('/api/notifications', notificationsRoutes);
 
 module.exports = app;
 

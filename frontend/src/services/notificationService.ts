@@ -14,7 +14,7 @@ export interface UserNotification {
   id: string;
   title: string;
   message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: 'info' | 'success' | 'warning' | 'error' | 'personal' | 'general';
   read: boolean;
   timestamp: Date;
   senderName?: string;
@@ -82,11 +82,12 @@ export const notificationService = {
     return response.data;
   },
 
-  async sendAdminMessageEmail(title: string, content: string, userIds: number[]): Promise<EmailNotificationResponse> {
+  async sendAdminMessageEmail(title: string, content: string, userIds: number[], isGeneral: boolean = false): Promise<EmailNotificationResponse> {
     const response = await api.post('/notifications/admin-message', {
       title,
       content,
-      userIds
+      userIds,
+      isGeneral
     });
     return response.data;
   },
@@ -152,11 +153,11 @@ class LocalNotificationManager {
     };
   }
 
-  addNotification(notification: Omit<UserNotification, 'id' | 'timestamp'>) {
+  addNotification(notification: Omit<UserNotification, 'id' | 'timestamp'> & { timestamp?: Date }) {
     const newNotification: UserNotification = {
       ...notification,
       id: Date.now().toString(),
-      timestamp: new Date()
+      timestamp: notification.timestamp ? new Date(notification.timestamp) : new Date()
     };
     
     this.notifications.unshift(newNotification);

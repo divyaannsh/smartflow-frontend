@@ -75,34 +75,23 @@ const Layout: React.FC = () => {
     handleMenuClose();
   };
 
-  const menuItems = [
-    { 
-      text: 'Dashboard', 
-      icon: <Dashboard />, 
-      path: '/',
-      description: 'Overview and analytics'
-    },
-    { 
-      text: 'Projects', 
-      icon: <Folder />, 
-      path: '/projects',
-      description: 'Manage your projects'
-    },
-    { 
-      text: 'Tasks', 
-      icon: <Assignment />, 
-      path: '/tasks',
-      description: 'Track and manage tasks'
-    },
-    { 
-      text: 'Users', 
-      icon: <People />, 
-      path: '/users',
-      description: 'Team management'
-    },
-  ];
+  let menuItems = [] as Array<{ text: string; icon: React.ReactNode; path: string; description: string }>;
+  if (user?.role === 'admin') {
+    menuItems = [
+      { text: 'Dashboard', icon: <Dashboard />, path: '/', description: 'Overview and analytics' },
+      { text: 'Projects', icon: <Folder />, path: '/projects', description: 'Manage your projects' },
+      { text: 'Tasks', icon: <Assignment />, path: '/tasks', description: 'Track and manage tasks' },
+      { text: 'Users', icon: <People />, path: '/users', description: 'Team management' },
+    ];
+  } else {
+    // Regular user: only Users and My Portal
+    menuItems = [
+      { text: 'Users', icon: <People />, path: '/users', description: 'Team management' },
+      { text: 'My Portal', icon: <Person />, path: '/portal', description: 'Personal workspace' },
+    ];
+  }
 
-  // Add role-specific menu items
+  // Add role-specific admin extras
   if (user?.role === 'admin') {
     // Admin menu items
     menuItems.push(
@@ -119,14 +108,6 @@ const Layout: React.FC = () => {
         description: 'Assign tasks to team'
       }
     );
-  } else {
-    // User menu items
-    menuItems.push({
-      text: 'My Portal',
-      icon: <Person />,
-      path: '/portal',
-      description: 'Personal workspace'
-    });
   }
 
   const drawer = (
