@@ -24,8 +24,8 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// Get port from environment variable or default to 5000
-const PORT = process.env.PORT || 5000;
+// Get port from environment variable or default to 5001 (aligns with frontend proxy)
+const PORT = process.env.PORT || 5001;
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {

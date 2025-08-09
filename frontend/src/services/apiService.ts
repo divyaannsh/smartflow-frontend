@@ -1,9 +1,10 @@
 
 import axios from 'axios';
+import { User, Project, Task, TaskStats } from '../types';
 
 // API Configuration
 const API_BASE_URL = process.env.NODE_ENV === 'development' 
-  ? 'http://localhost:5000/api'
+  ? 'http://localhost:5001/api'
   : (process.env.REACT_APP_API_URL || 'https://jirasoftware-6d40.onrender.com/api');
 
 // Create axios instance with default config
@@ -44,13 +45,13 @@ api.interceptors.response.use(
 );
 
 // Mock data for development fallback
-const mockUsers = [
+const mockUsers: User[] = [
   {
     id: 1,
     username: 'admin',
     email: 'admin@example.com',
     full_name: 'Admin User',
-    role: 'admin',
+    role: 'admin' as const,
     created_at: '2024-01-01T00:00:00Z'
   },
   {
@@ -58,17 +59,19 @@ const mockUsers = [
     username: 'user',
     email: 'user@example.com',
     full_name: 'Regular User',
-    role: 'member',
+    role: 'member' as const,
     created_at: '2024-01-01T00:00:00Z'
   }
 ];
 
-const mockProjects = [
+const mockProjects: Project[] = [
   {
     id: 1,
     name: 'Website Redesign',
     description: 'Complete overhaul of company website',
-    status: 'in_progress',
+    status: 'active',
+    priority: 'high',
+    created_by: 1,
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   },
@@ -76,13 +79,15 @@ const mockProjects = [
     id: 2,
     name: 'Mobile App Development',
     description: 'iOS and Android app development',
-    status: 'planning',
+    status: 'on_hold',
+    priority: 'medium',
+    created_by: 1,
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   }
 ];
 
-const mockTasks = [
+const mockTasks: Task[] = [
   {
     id: 1,
     title: 'Design Homepage',
@@ -91,7 +96,9 @@ const mockTasks = [
     priority: 'high',
     assigned_to: 2,
     project_id: 1,
-    due_date: '2024-12-31',
+    deadline: '2024-12-31',
+    estimated_hours: 12,
+    created_by: 1,
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   },
@@ -99,47 +106,19 @@ const mockTasks = [
     id: 2,
     title: 'Setup Database',
     description: 'Configure database schema',
-    status: 'completed',
+    status: 'done',
     priority: 'medium',
     assigned_to: 1,
     project_id: 1,
-    due_date: '2024-12-15',
+    deadline: '2024-12-15',
+    estimated_hours: 8,
+    created_by: 1,
     created_at: '2024-01-01T00:00:00Z',
     updated_at: '2024-01-01T00:00:00Z'
   }
 ];
 
-// Types
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  full_name: string;
-  role: 'admin' | 'manager' | 'member';
-  created_at: string;
-}
-
-export interface Project {
-  id: number;
-  name: string;
-  description: string;
-  status: 'planning' | 'in_progress' | 'completed' | 'on_hold';
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Task {
-  id: number;
-  title: string;
-  description: string;
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
-  priority: 'low' | 'medium' | 'high';
-  assigned_to: number;
-  project_id: number;
-  due_date: string;
-  created_at: string;
-  updated_at: string;
-}
+// Types are imported from '../types'
 
 // Auth Service
 export const authService = {
@@ -195,7 +174,7 @@ export const authService = {
 
 // Projects Service
 export const projectsService = {
-  async getAllProjects(): Promise<Project[]> {
+  async getAll(): Promise<Project[]> {
     try {
       const response = await api.get('/projects');
       return response.data;
@@ -205,7 +184,7 @@ export const projectsService = {
     }
   },
 
-  async getProject(id: number): Promise<Project> {
+  async getById(id: number): Promise<Project> {
     try {
       const response = await api.get(`/projects/${id}`);
       return response.data;
@@ -216,7 +195,25 @@ export const projectsService = {
     }
   },
 
-  async createProject(projectData: { name: string; description: string }): Promise<Project> {
+  async getMembers(projectId: number): Promise<Array<{ user_id: number; role: string; full_name: string; email: string }>> {
+    try {
+      const response = await api.get(`/projects/${projectId}/members`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to fetch project members');
+    }
+  },
+
+  async addMember(projectId: number, userId: number, role: 'admin' | 'manager' | 'member' = 'member') {
+    try {
+      const response = await api.post(`/projects/${projectId}/members`, { user_id: userId, role });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Failed to add member');
+    }
+  },
+
+  async create(projectData: { name: string; description: string }): Promise<Project> {
     try {
       const response = await api.post('/projects', projectData);
       return response.data;
@@ -225,7 +222,7 @@ export const projectsService = {
     }
   },
 
-  async updateProject(id: number, projectData: Partial<Project>): Promise<Project> {
+  async update(id: number, projectData: Partial<Project>): Promise<Project> {
     try {
       const response = await api.put(`/projects/${id}`, projectData);
       return response.data;
@@ -234,7 +231,7 @@ export const projectsService = {
     }
   },
 
-  async deleteProject(id: number): Promise<void> {
+  async delete(id: number): Promise<void> {
     try {
       await api.delete(`/projects/${id}`);
     } catch (error: any) {
@@ -245,7 +242,7 @@ export const projectsService = {
 
 // Tasks Service
 export const tasksService = {
-  async getAllTasks(): Promise<Task[]> {
+  async getAll(): Promise<Task[]> {
     try {
       const response = await api.get('/tasks');
       return response.data;
@@ -255,7 +252,7 @@ export const tasksService = {
     }
   },
 
-  async getTask(id: number): Promise<Task> {
+  async getById(id: number): Promise<Task> {
     try {
       const response = await api.get(`/tasks/${id}`);
       return response.data;
@@ -266,13 +263,15 @@ export const tasksService = {
     }
   },
 
-  async createTask(taskData: {
+  async create(taskData: {
     title: string;
     description: string;
     priority: string;
-    assigned_to: number;
+    assigned_to?: number;
     project_id: number;
-    due_date: string;
+    deadline?: string;
+    status?: 'todo' | 'in_progress' | 'review' | 'done';
+    estimated_hours?: number;
   }): Promise<Task> {
     try {
       const response = await api.post('/tasks', taskData);
@@ -282,7 +281,7 @@ export const tasksService = {
     }
   },
 
-  async updateTask(id: number, taskData: Partial<Task>): Promise<Task> {
+  async update(id: number, taskData: Partial<Task>): Promise<Task> {
     try {
       const response = await api.put(`/tasks/${id}`, taskData);
       return response.data;
@@ -291,11 +290,40 @@ export const tasksService = {
     }
   },
 
-  async deleteTask(id: number): Promise<void> {
+  async delete(id: number): Promise<void> {
     try {
       await api.delete(`/tasks/${id}`);
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Failed to delete task');
+    }
+  },
+
+  async updateStatus(id: number, status: string): Promise<{ message: string; status: string }> {
+    try {
+      const response = await api.patch(`/tasks/${id}/status`, { status });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to update task status');
+    }
+  },
+
+  async getStats(): Promise<any> {
+    try {
+      const response = await api.get('/tasks/stats/overview');
+      return response.data;
+    } catch (error) {
+      return {
+        total_tasks: mockTasks.length,
+        todo_tasks: mockTasks.filter(t => t.status === 'todo').length,
+        in_progress_tasks: mockTasks.filter(t => t.status === 'in_progress').length,
+        review_tasks: mockTasks.filter(t => t.status === 'review').length,
+        done_tasks: mockTasks.filter(t => t.status === 'done').length,
+        critical_tasks: mockTasks.filter(t => t.priority === 'critical').length,
+        high_tasks: mockTasks.filter(t => t.priority === 'high').length,
+        overdue_tasks: mockTasks.filter(t => t.deadline && new Date(t.deadline) < new Date()).length,
+        total_estimated_hours: mockTasks.reduce((s, t) => s + (t.estimated_hours || 0), 0),
+        total_actual_hours: 0,
+      } as TaskStats;
     }
   },
 
@@ -312,7 +340,7 @@ export const tasksService = {
 
 // Users Service
 export const usersService = {
-  async getAllUsers(): Promise<User[]> {
+  async getAll(): Promise<User[]> {
     try {
       const response = await api.get('/users');
       return response.data;
@@ -322,7 +350,7 @@ export const usersService = {
     }
   },
 
-  async getUser(id: number): Promise<User> {
+  async getById(id: number): Promise<User> {
     try {
       const response = await api.get(`/users/${id}`);
       return response.data;
@@ -333,7 +361,7 @@ export const usersService = {
     }
   },
 
-  async updateUser(id: number, userData: Partial<User>): Promise<User> {
+  async update(id: number, userData: Partial<User>): Promise<User> {
     try {
       const response = await api.put(`/users/${id}`, userData);
       return response.data;
@@ -342,11 +370,38 @@ export const usersService = {
     }
   },
 
-  async deleteUser(id: number): Promise<void> {
+  async delete(id: number): Promise<void> {
     try {
       await api.delete(`/users/${id}`);
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Failed to delete user');
+    }
+  },
+
+  async getTasks(id: number, params?: { status?: string; priority?: string }): Promise<Task[]> {
+    try {
+      const response = await api.get(`/users/${id}/tasks`, { params });
+      return response.data;
+    } catch (error) {
+      console.log('Using mock user tasks');
+      return mockTasks.filter(task => task.assigned_to === id);
+    }
+  },
+
+  async getWorkload(id: number): Promise<any> {
+    try {
+      const response = await api.get(`/users/${id}/workload`);
+      return response.data;
+    } catch (error) {
+      const userTasks = mockTasks.filter(task => task.assigned_to === id);
+      return {
+        total_tasks: userTasks.length,
+        done_tasks: userTasks.filter(t => t.status === 'done').length,
+        in_progress_tasks: userTasks.filter(t => t.status === 'in_progress').length,
+        review_tasks: userTasks.filter(t => t.status === 'review').length,
+        todo_tasks: userTasks.filter(t => t.status === 'todo').length,
+        average_completion_time: 3.5
+      };
     }
   }
 };

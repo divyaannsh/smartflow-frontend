@@ -8,6 +8,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Projects from './pages/Projects';
+import ProjectForm from './pages/ProjectForm';
 import Tasks from './pages/Tasks';
 import TaskForm from './pages/TaskForm';
 import Users from './pages/Users';
@@ -58,6 +59,7 @@ const App: React.FC = () => {
               <Route index element={<Dashboard />} />
               <Route path="projects" element={<Projects />} />
               <Route path="projects/:id" element={<ProjectDetail />} />
+              <Route path="projects/new" element={<ProjectForm />} />
               <Route path="tasks" element={<Tasks />} />
               <Route path="tasks/new" element={<TaskForm />} />
               <Route path="tasks/:id" element={<TaskDetail />} />

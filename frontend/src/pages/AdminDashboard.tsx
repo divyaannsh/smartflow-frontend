@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Grid,
   Card,
   CardContent,
   Paper,
@@ -39,6 +38,7 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import {
   AdminPanelSettings,
   People,
@@ -261,7 +261,7 @@ const AdminDashboard: React.FC = () => {
           </Box>
           
           <Grid container spacing={2}>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <Box sx={{ textAlign: 'center', p: 2 }}>
                 <Typography variant="h4" sx={{ fontWeight: 700, color: 'success.main' }}>
                   {projects.filter(p => p.status === 'active').length}
@@ -271,7 +271,7 @@ const AdminDashboard: React.FC = () => {
                 </Typography>
               </Box>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <Box sx={{ textAlign: 'center', p: 2 }}>
                 <Typography variant="h4" sx={{ fontWeight: 700, color: 'warning.main' }}>
                   {getOverdueTasks().length}
@@ -281,7 +281,7 @@ const AdminDashboard: React.FC = () => {
                 </Typography>
               </Box>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <Box sx={{ textAlign: 'center', p: 2 }}>
                 <Typography variant="h4" sx={{ fontWeight: 700, color: 'info.main' }}>
                   {users.filter(u => u.role === 'admin').length}
@@ -291,7 +291,7 @@ const AdminDashboard: React.FC = () => {
                 </Typography>
               </Box>
             </Grid>
-            <Grid item xs={6}>
+            <Grid size={{ xs: 6 }}>
               <Box sx={{ textAlign: 'center', p: 2 }}>
                 <Typography variant="h4" sx={{ fontWeight: 700, color: 'error.main' }}>
                   {getCriticalTasks().length}
@@ -331,9 +331,10 @@ const AdminDashboard: React.FC = () => {
                       </Avatar>
                     </ListItemAvatar>
                     <ListItemText
+                      disableTypography
                       primary={
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }} component="span">
                             {member.full_name}
                           </Typography>
                           <Chip
@@ -345,7 +346,7 @@ const AdminDashboard: React.FC = () => {
                       }
                       secondary={
                         <Box>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography variant="body2" color="text.secondary" component="span" display="block">
                             {member.completedTasks}/{member.totalTasks} tasks completed
                           </Typography>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
@@ -354,14 +355,14 @@ const AdminDashboard: React.FC = () => {
                               value={member.completionRate}
                               sx={{ flex: 1, height: 6, borderRadius: 3 }}
                             />
-                            <Typography variant="caption">
+                            <Typography variant="caption" component="span">
                               {Math.round(member.completionRate)}%
                             </Typography>
                           </Box>
                           {member.overdueTasks > 0 && (
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
                               <Warning color="error" sx={{ fontSize: 12 }} />
-                              <Typography variant="caption" color="error">
+                              <Typography variant="caption" color="error" component="span">
                                 {member.overdueTasks} overdue
                               </Typography>
                             </Box>
@@ -415,13 +416,18 @@ const AdminDashboard: React.FC = () => {
                         </Avatar>
                       </ListItemAvatar>
                       <ListItemText
-                        primary={task.title}
+                        disableTypography
+                        primary={
+                          <Typography variant="subtitle2" component="span">
+                            {task.title}
+                          </Typography>
+                        }
                         secondary={
                           <Box>
-                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                            <Typography variant="body2" sx={{ opacity: 0.9 }} component="span" display="block">
                               {task.description?.substring(0, 60)}...
                             </Typography>
-                            <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                            <Typography variant="caption" sx={{ opacity: 0.8 }} component="span" display="block">
                               Due: {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'No deadline'}
                             </Typography>
                           </Box>
@@ -630,7 +636,7 @@ const AdminDashboard: React.FC = () => {
           )}
 
           <Grid container spacing={3}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <AdminStatCard
                 title="Total Users"
                 value={users.length}
@@ -641,7 +647,7 @@ const AdminDashboard: React.FC = () => {
                 trendDirection="up"
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <AdminStatCard
                 title="Active Projects"
                 value={projects.filter(p => p.status === 'active').length}
@@ -652,7 +658,7 @@ const AdminDashboard: React.FC = () => {
                 trendDirection="up"
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <AdminStatCard
                 title="Total Tasks"
                 value={tasks.length}
@@ -663,7 +669,7 @@ const AdminDashboard: React.FC = () => {
                 trendDirection="down"
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <AdminStatCard
                 title="Critical Issues"
                 value={getCriticalTasks().length}
@@ -677,19 +683,19 @@ const AdminDashboard: React.FC = () => {
           </Grid>
 
           <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <SystemOverview />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TeamPerformance />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <CriticalTasksAlert />
             </Grid>
           </Grid>
 
           <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ProjectManagement />
             </Grid>
           </Grid>

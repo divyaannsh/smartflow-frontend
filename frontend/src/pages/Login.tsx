@@ -42,6 +42,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { authService } from '../services/apiService';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -136,19 +137,10 @@ const Login: React.FC = () => {
     setError('');
     
     try {
-      // Call API to register, then login with the new account
-      const res = await fetch(`${process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : ''}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(registerData)
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.message || data?.error || 'Registration failed');
-      }
-      // Persist token
-      if (data.token) {
-        localStorage.setItem('token', data.token);
+      // Call API service to register (uses centralized axios baseURL)
+      const { token } = await authService.register(registerData);
+      if (token) {
+        localStorage.setItem('token', token);
       }
       // Always login to populate AuthContext state
       const user = await login(registerData.username, registerData.password);

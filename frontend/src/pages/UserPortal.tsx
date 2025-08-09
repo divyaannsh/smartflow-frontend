@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Grid,
   Card,
   CardContent,
   Paper,
@@ -32,6 +31,7 @@ import {
   Tooltip,
   Badge,
 } from '@mui/material';
+import { Grid } from '@mui/material';
 import {
   Person,
   Assignment,
@@ -268,7 +268,7 @@ const UserPortal: React.FC = () => {
             </Box>
             
             <Grid container spacing={3}>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Box sx={{ textAlign: 'center', p: 2 }}>
                   <Typography variant="h4" sx={{ fontWeight: 700, color: 'success.main' }}>
                     {Math.round(completionRate)}%
@@ -283,7 +283,7 @@ const UserPortal: React.FC = () => {
                   />
                 </Box>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Box sx={{ textAlign: 'center', p: 2 }}>
                   <Typography variant="h4" sx={{ fontWeight: 700, color: 'info.main' }}>
                     {Math.round(productivityScore)}%
@@ -298,7 +298,7 @@ const UserPortal: React.FC = () => {
                   />
                 </Box>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Box sx={{ textAlign: 'center', p: 2 }}>
                   <Typography variant="h4" sx={{ fontWeight: 700, color: 'warning.main' }}>
                     {completedTasks}
@@ -308,7 +308,7 @@ const UserPortal: React.FC = () => {
                   </Typography>
                 </Box>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={6}>
                 <Box sx={{ textAlign: 'center', p: 2 }}>
                   <Typography variant="h4" sx={{ fontWeight: 700, color: 'error.main' }}>
                     {getOverdueTasks().length}
@@ -628,7 +628,7 @@ const UserPortal: React.FC = () => {
           )}
 
           <Grid container spacing={3}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <UserStatCard
                 title="My Tasks"
                 value={getUserTasks().length}
@@ -639,7 +639,7 @@ const UserPortal: React.FC = () => {
                 trendDirection="up"
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <UserStatCard
                 title="My Projects"
                 value={getUserProjects().length}
@@ -650,7 +650,7 @@ const UserPortal: React.FC = () => {
                 trendDirection="up"
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <UserStatCard
                 title="Today's Tasks"
                 value={getTodayTasks().length}
@@ -661,7 +661,7 @@ const UserPortal: React.FC = () => {
                 trendDirection="down"
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <UserStatCard
                 title="Overdue"
                 value={getOverdueTasks().length}
@@ -675,19 +675,19 @@ const UserPortal: React.FC = () => {
           </Grid>
 
           <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <PersonalProgress />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TodayTasks />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <UpcomingDeadlines />
             </Grid>
           </Grid>
 
           <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <MyTasks />
             </Grid>
           </Grid>

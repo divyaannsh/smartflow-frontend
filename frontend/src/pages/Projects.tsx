@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   Button,
-  Grid,
   TextField,
   FormControl,
   InputLabel,
@@ -18,6 +17,7 @@ import {
   IconButton,
   Chip,
 } from '@mui/material';
+import { Grid } from '@mui/material';
 import { Add, Search, FilterList } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { projectsService } from '../services/apiService';
@@ -118,7 +118,7 @@ const Projects: React.FC = () => {
 
       <Box sx={{ mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <TextField
               fullWidth
               placeholder="Search projects..."
@@ -129,7 +129,7 @@ const Projects: React.FC = () => {
               }}
             />
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <FormControl fullWidth>
               <InputLabel>Status</InputLabel>
               <Select
@@ -144,7 +144,7 @@ const Projects: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <FormControl fullWidth>
               <InputLabel>Priority</InputLabel>
               <Select
@@ -160,7 +160,7 @@ const Projects: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid size={{ xs: 12, md: 2 }}>
             <Chip
               icon={<FilterList />}
               label={`${filteredProjects.length} projects`}
@@ -184,7 +184,7 @@ const Projects: React.FC = () => {
       ) : (
         <Grid container spacing={3}>
           {filteredProjects.map((project) => (
-            <Grid item xs={12} sm={6} md={4} key={project.id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={project.id}>
               <ProjectCard
                 project={project}
                 onEdit={handleEditProject}

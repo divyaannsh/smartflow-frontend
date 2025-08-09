@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { User, AuthContextType } from '../types';
 import { authService } from '../services/apiService';
 
@@ -19,8 +19,12 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  // Prevent double-fetch in React 18 StrictMode (dev only)
+  const hasInitializedRef = useRef(false);
 
   useEffect(() => {
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
     const token = localStorage.getItem('token');
     console.log('AuthContext: Token found:', !!token);
     if (token) {

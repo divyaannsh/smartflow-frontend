@@ -15,7 +15,6 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Grid,
   Chip,
   IconButton,
   Tooltip,
@@ -172,8 +171,8 @@ const EmailNotificationSettingsComponent: React.FC = () => {
                 Notification Preferences
               </Typography>
 
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                <Box>
                   <FormControlLabel
                     control={
                       <Switch
@@ -189,9 +188,8 @@ const EmailNotificationSettingsComponent: React.FC = () => {
                       </Box>
                     }
                   />
-                </Grid>
-
-                <Grid item xs={12} md={6}>
+                </Box>
+                <Box>
                   <FormControlLabel
                     control={
                       <Switch
@@ -207,9 +205,8 @@ const EmailNotificationSettingsComponent: React.FC = () => {
                       </Box>
                     }
                   />
-                </Grid>
-
-                <Grid item xs={12} md={6}>
+                </Box>
+                <Box>
                   <FormControlLabel
                     control={
                       <Switch
@@ -225,9 +222,8 @@ const EmailNotificationSettingsComponent: React.FC = () => {
                       </Box>
                     }
                   />
-                </Grid>
-
-                <Grid item xs={12} md={6}>
+                </Box>
+                <Box>
                   <FormControlLabel
                     control={
                       <Switch
@@ -243,9 +239,8 @@ const EmailNotificationSettingsComponent: React.FC = () => {
                       </Box>
                     }
                   />
-                </Grid>
-
-                <Grid item xs={12} md={6}>
+                </Box>
+                <Box>
                   <FormControlLabel
                     control={
                       <Switch
@@ -261,8 +256,8 @@ const EmailNotificationSettingsComponent: React.FC = () => {
                       </Box>
                     }
                   />
-                </Grid>
-              </Grid>
+                </Box>
+              </Box>
 
               <Divider sx={{ my: 3 }} />
 

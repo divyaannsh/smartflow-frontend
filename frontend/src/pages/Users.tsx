@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   Button,
-  Grid,
   Card,
   CardContent,
   Avatar,
@@ -23,6 +22,7 @@ import {
   LinearProgress,
   Tooltip,
 } from '@mui/material';
+import { Grid } from '@mui/material';
 import {
   Add,
   Search,
@@ -172,7 +172,7 @@ const Users: React.FC = () => {
               />
               
               <Grid container spacing={1} sx={{ mt: 1 }}>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Box textAlign="center">
                     <Typography variant="h6" color="primary">
                       {workload.total_tasks}
@@ -182,7 +182,7 @@ const Users: React.FC = () => {
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <Box textAlign="center">
                     <Typography variant="h6" color="success.main">
                       {workload.done_tasks}
@@ -193,7 +193,7 @@ const Users: React.FC = () => {
                   </Box>
                 </Grid>
                 {workload.overdue_tasks > 0 && (
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <Box textAlign="center">
                       <Typography variant="h6" color="error">
                         {workload.overdue_tasks}
@@ -263,7 +263,7 @@ const Users: React.FC = () => {
 
       <Box sx={{ mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <TextField
               fullWidth
               placeholder="Search users..."
@@ -274,7 +274,7 @@ const Users: React.FC = () => {
               }}
             />
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <FormControl fullWidth>
               <InputLabel>Role</InputLabel>
               <Select
@@ -289,7 +289,7 @@ const Users: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <Chip
               icon={<FilterList />}
               label={`${filteredUsers.length} members`}
@@ -299,7 +299,7 @@ const Users: React.FC = () => {
         </Grid>
       </Box>
 
-      {filteredUsers.length === 0 ? (
+        {filteredUsers.length === 0 ? (
         <Box textAlign="center" py={4}>
           <Typography variant="h6" color="text.secondary" gutterBottom>
             No team members found
@@ -310,15 +310,15 @@ const Users: React.FC = () => {
               : 'Add your first team member to get started'}
           </Typography>
         </Box>
-      ) : (
+        ) : (
         <Grid container spacing={3}>
           {filteredUsers.map((user) => (
-            <Grid item xs={12} sm={6} md={4} key={user.id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={user.id}>
               <UserCard user={user} />
             </Grid>
           ))}
         </Grid>
-      )}
+        )}
 
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
         <DialogTitle>Delete Team Member</DialogTitle>

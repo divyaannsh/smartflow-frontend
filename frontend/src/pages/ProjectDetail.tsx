@@ -4,7 +4,6 @@ import {
   Box,
   Typography,
   Paper,
-  Grid,
   Card,
   CardContent,
   Chip,
@@ -40,6 +39,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
+import { Grid } from '@mui/material';
 import {
   Edit,
   Delete,
@@ -93,6 +93,10 @@ const ProjectDetail: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<string>('');
+  const [selectedRole, setSelectedRole] = useState<'member' | 'manager' | 'admin'>('member');
+  const [members, setMembers] = useState<Array<{ user_id: number; role: string; full_name: string; email: string }>>([]);
   const [editForm, setEditForm] = useState<{
     name: string;
     description: string;
@@ -125,6 +129,12 @@ const ProjectDetail: React.FC = () => {
       setProject(projectData);
       setTasks(tasksData.filter(task => task.project_id === parseInt(id!)));
       setUsers(usersData);
+      try {
+        const memberRows = await projectsService.getMembers(parseInt(id!));
+        setMembers(memberRows);
+      } catch (e) {
+        // ignore
+      }
       
       // Initialize edit form
       setEditForm({
@@ -138,6 +148,20 @@ const ProjectDetail: React.FC = () => {
       setError(err.response?.data?.error || 'Failed to load project data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddMember = async () => {
+    if (!selectedMember) return;
+    try {
+      await projectsService.addMember(parseInt(id!), parseInt(selectedMember), selectedRole);
+      const updated = await projectsService.getMembers(parseInt(id!));
+      setMembers(updated);
+      setAddMemberDialogOpen(false);
+      setSelectedMember('');
+      setSelectedRole('member');
+    } catch (err: any) {
+      setError(err.message || 'Failed to add member');
     }
   };
 
@@ -250,7 +274,7 @@ const ProjectDetail: React.FC = () => {
 
       {/* Project Overview */}
       <Grid container spacing={3} mb={3}>
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Project Overview
@@ -260,7 +284,7 @@ const ProjectDetail: React.FC = () => {
             </Typography>
             
             <Grid container spacing={2} mb={3}>
-              <Grid item xs={6} sm={3}>
+              <Grid size={{ xs: 6, sm: 3 }}>
                 <Box textAlign="center">
                   <Typography variant="h4" color="primary">
                     {tasks.length}
@@ -270,7 +294,7 @@ const ProjectDetail: React.FC = () => {
                   </Typography>
                 </Box>
               </Grid>
-              <Grid item xs={6} sm={3}>
+              <Grid size={{ xs: 6, sm: 3 }}>
                 <Box textAlign="center">
                   <Typography variant="h4" color="success.main">
                     {getTaskStatusCount('done')}
@@ -280,7 +304,7 @@ const ProjectDetail: React.FC = () => {
                   </Typography>
                 </Box>
               </Grid>
-              <Grid item xs={6} sm={3}>
+              <Grid size={{ xs: 6, sm: 3 }}>
                 <Box textAlign="center">
                   <Typography variant="h4" color="warning.main">
                     {getTaskStatusCount('in_progress')}
@@ -290,7 +314,7 @@ const ProjectDetail: React.FC = () => {
                   </Typography>
                 </Box>
               </Grid>
-              <Grid item xs={6} sm={3}>
+              <Grid size={{ xs: 6, sm: 3 }}>
                 <Box textAlign="center">
                   <Typography variant="h4" color="info.main">
                     {getTaskStatusCount('todo')}
@@ -318,7 +342,7 @@ const ProjectDetail: React.FC = () => {
           </Paper>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Project Details
@@ -361,13 +385,18 @@ const ProjectDetail: React.FC = () => {
               <Typography variant="body2" color="text.secondary">
                 Team Members
               </Typography>
-              <AvatarGroup max={4} sx={{ mt: 1 }}>
-                {users.slice(0, 4).map((user) => (
-                  <Tooltip key={user.id} title={user.full_name}>
-                    <Avatar>{user.full_name.charAt(0)}</Avatar>
+              <AvatarGroup max={6} sx={{ mt: 1 }}>
+                {members.map((m) => (
+                  <Tooltip key={m.user_id} title={`${m.full_name} • ${m.role}`}>
+                    <Avatar>{m.full_name.charAt(0)}</Avatar>
                   </Tooltip>
                 ))}
               </AvatarGroup>
+              <Box mt={1}>
+                <Button variant="outlined" size="small" onClick={() => setAddMemberDialogOpen(true)}>
+                  Add Member
+                </Button>
+              </Box>
             </Box>
           </Paper>
         </Grid>
@@ -565,6 +594,45 @@ const ProjectDetail: React.FC = () => {
         <DialogActions>
           <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
           <Button onClick={handleEditProject} variant="contained">Save</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add Member Dialog */}
+      <Dialog open={addMemberDialogOpen} onClose={() => setAddMemberDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add Team Member</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>User</InputLabel>
+            <Select
+              value={selectedMember}
+              onChange={(e) => setSelectedMember(e.target.value as string)}
+              label="User"
+            >
+              {users
+                .filter(u => !members.some(m => m.user_id === u.id))
+                .map(u => (
+                  <MenuItem key={u.id} value={u.id.toString()}>
+                    {u.full_name} ({u.email})
+                  </MenuItem>
+                ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Role</InputLabel>
+            <Select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value as any)}
+              label="Role"
+            >
+              <MenuItem value="member">Member</MenuItem>
+              <MenuItem value="manager">Manager</MenuItem>
+              <MenuItem value="admin">Admin</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddMemberDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleAddMember} variant="contained" disabled={!selectedMember}>Add</Button>
         </DialogActions>
       </Dialog>
 

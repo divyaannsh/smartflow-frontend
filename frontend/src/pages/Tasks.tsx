@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   Button,
-  Grid,
   Card,
   CardContent,
   Chip,
@@ -22,6 +21,7 @@ import {
   Avatar,
   Tooltip,
 } from '@mui/material';
+import { Grid } from '@mui/material';
 import {
   Add,
   Search,
@@ -238,7 +238,7 @@ const Tasks: React.FC = () => {
 
       <Box sx={{ mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <TextField
               fullWidth
               placeholder="Search tasks..."
@@ -249,7 +249,7 @@ const Tasks: React.FC = () => {
               }}
             />
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid size={{ xs: 12, md: 2 }}>
             <FormControl fullWidth>
               <InputLabel>Status</InputLabel>
               <Select
@@ -265,7 +265,7 @@ const Tasks: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid size={{ xs: 12, md: 2 }}>
             <FormControl fullWidth>
               <InputLabel>Priority</InputLabel>
               <Select
@@ -281,7 +281,7 @@ const Tasks: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid size={{ xs: 12, md: 2 }}>
             <Button
               variant={viewMode === 'kanban' ? 'contained' : 'outlined'}
               onClick={() => setViewMode('kanban')}
@@ -290,7 +290,7 @@ const Tasks: React.FC = () => {
               Kanban
             </Button>
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid size={{ xs: 12, md: 2 }}>
             <Chip
               icon={<FilterList />}
               label={`${filteredTasks.length} tasks`}
@@ -316,7 +316,7 @@ const Tasks: React.FC = () => {
           {statusColumns.map((column) => {
             const columnTasks = getStatusTasks(column.key);
             return (
-              <Grid item xs={12} sm={6} md={3} key={column.key}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={column.key}>
                 <Box
                   sx={{
                     backgroundColor: column.color,
@@ -339,7 +339,7 @@ const Tasks: React.FC = () => {
       ) : (
         <Grid container spacing={2}>
           {filteredTasks.map((task) => (
-            <Grid item xs={12} key={task.id}>
+            <Grid size={12} key={task.id}>
               <TaskCard task={task} />
             </Grid>
           ))}

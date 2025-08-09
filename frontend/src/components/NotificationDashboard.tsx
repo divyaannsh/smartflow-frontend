@@ -165,9 +165,11 @@ const NotificationDashboard: React.FC<NotificationDashboardProps> = ({
                   {getNotificationIcon(notification.type)}
                 </ListItemIcon>
                 <ListItemText
+                  disableTypography
                   primary={
                     <Box display="flex" alignItems="center" gap={1}>
                       <Typography
+                        component="span"
                         variant="body2"
                         sx={{
                           fontWeight: notification.read ? 'normal' : 'bold',
@@ -188,7 +190,7 @@ const NotificationDashboard: React.FC<NotificationDashboardProps> = ({
                   }
                   secondary={
                     <Box>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography component="span" variant="body2" color="text.secondary" display="block">
                         {notification.message}
                       </Typography>
                       <Box display="flex" alignItems="center" gap={1} mt={1}>
@@ -199,12 +201,12 @@ const NotificationDashboard: React.FC<NotificationDashboardProps> = ({
                             >
                               {notification.senderName.charAt(0)}
                             </Avatar>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography component="span" variant="caption" color="text.secondary">
                               {notification.senderName}
                             </Typography>
                           </Box>
                         )}
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography component="span" variant="caption" color="text.secondary">
                           {notification.timestamp.toLocaleString()}
                         </Typography>
                       </Box>

@@ -2,6 +2,66 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { getDatabase } = require('../database/init');
 const router = express.Router();
+// Add team member to a project
+router.post('/:id/members', [
+  body('user_id').isInt({ min: 1 }).withMessage('Valid user_id is required'),
+  body('role').optional().isIn(['admin', 'manager', 'member']).withMessage('Invalid role')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    const { id } = req.params;
+    const { user_id, role = 'member' } = req.body;
+
+    const db = getDatabase();
+    const insert = `
+      INSERT INTO project_members (project_id, user_id, role)
+      VALUES (?, ?, ?)
+    `;
+
+    db.run(insert, [id, user_id, role], function(err) {
+      if (err) {
+        if (err.message.includes('UNIQUE')) {
+          return res.status(400).json({ error: 'User is already a member of this project' });
+        }
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      return res.status(201).json({ id: this.lastID, project_id: Number(id), user_id, role });
+    });
+  } catch (error) {
+    console.error('Error adding project member:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// List project members
+router.get('/:id/members', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const db = getDatabase();
+    const query = `
+      SELECT pm.project_id, pm.user_id, pm.role, pm.joined_at, u.full_name, u.email
+      FROM project_members pm
+      JOIN users u ON pm.user_id = u.id
+      WHERE pm.project_id = ?
+      ORDER BY u.full_name ASC
+    `;
+    db.all(query, [id], (err, rows) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      res.json(rows);
+    });
+  } catch (error) {
+    console.error('Error fetching project members:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 // Get all projects
 router.get('/', async (req, res) => {

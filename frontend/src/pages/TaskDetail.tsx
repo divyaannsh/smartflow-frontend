@@ -4,7 +4,6 @@ import {
   Box,
   Typography,
   Paper,
-  Grid,
   Card,
   CardContent,
   Chip,
@@ -43,6 +42,7 @@ import {
   AccordionSummary,
   AccordionDetails,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import {
   Edit,
   Delete,
@@ -376,7 +376,7 @@ const TaskDetail: React.FC = () => {
       {/* Quick Actions */}
       <Paper sx={{ p: 2, mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <Box display="flex" alignItems="center" gap={2}>
               <Typography variant="body2" color="text.secondary">
                 Status:
@@ -403,7 +403,7 @@ const TaskDetail: React.FC = () => {
               </Button>
             </Box>
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <Box display="flex" alignItems="center" gap={2}>
               <Typography variant="body2" color="text.secondary">
                 Time Tracking:
@@ -424,7 +424,7 @@ const TaskDetail: React.FC = () => {
 
       {/* Main Content */}
       <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Paper sx={{ width: '100%' }}>
             <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
               <Tab label="Details" />
@@ -443,7 +443,7 @@ const TaskDetail: React.FC = () => {
               </Typography>
 
               <Grid container spacing={2} mb={3}>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Typography variant="body2" color="text.secondary">
                     Assigned To
                   </Typography>
@@ -451,7 +451,7 @@ const TaskDetail: React.FC = () => {
                     {task.assigned_to_name || 'Unassigned'}
                   </Typography>
                 </Grid>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Typography variant="body2" color="text.secondary">
                     Created By
                   </Typography>
@@ -459,7 +459,7 @@ const TaskDetail: React.FC = () => {
                     {task.created_by_name}
                   </Typography>
                 </Grid>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Typography variant="body2" color="text.secondary">
                     Estimated Hours
                   </Typography>
@@ -467,7 +467,7 @@ const TaskDetail: React.FC = () => {
                     {task.estimated_hours || 0}h
                   </Typography>
                 </Grid>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Typography variant="body2" color="text.secondary">
                     Actual Hours
                   </Typography>
@@ -586,7 +586,7 @@ const TaskDetail: React.FC = () => {
           </Paper>
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Task Information

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Grid,
   Paper,
   CircularProgress,
   Alert,
@@ -27,6 +26,7 @@ import {
   useTheme,
   alpha,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import {
   Assignment,
   Folder,
@@ -487,7 +487,7 @@ const Dashboard: React.FC = () => {
           <NotificationDashboard maxNotifications={3} showUnreadOnly={false} />
 
           <Grid container spacing={3}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard
                 title="Total Projects"
                 value={projects.length}
@@ -497,7 +497,7 @@ const Dashboard: React.FC = () => {
                 trend={12}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard
                 title="Total Tasks"
                 value={tasks.length}
@@ -507,7 +507,7 @@ const Dashboard: React.FC = () => {
                 trend={-5}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard
                 title="Team Members"
                 value={users.length}
@@ -517,7 +517,7 @@ const Dashboard: React.FC = () => {
                 trend={8}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard
                 title="Overdue Tasks"
                 value={taskStats?.overdue_tasks || 0}
@@ -531,13 +531,13 @@ const Dashboard: React.FC = () => {
 
           {taskStats && (
             <Grid container spacing={3} sx={{ mt: 2 }}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card sx={{ p: 3, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
                   <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                     Task Status Overview
                   </Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Box textAlign="center">
                         <CheckCircle sx={{ fontSize: 40, mb: 1 }} />
                         <Typography variant="h4" sx={{ fontWeight: 700 }}>
@@ -548,7 +548,7 @@ const Dashboard: React.FC = () => {
                         </Typography>
                       </Box>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Box textAlign="center">
                         <Warning sx={{ fontSize: 40, mb: 1 }} />
                         <Typography variant="h4" sx={{ fontWeight: 700 }}>
@@ -559,7 +559,7 @@ const Dashboard: React.FC = () => {
                         </Typography>
                       </Box>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Box textAlign="center">
                         <Assignment sx={{ fontSize: 40, mb: 1 }} />
                         <Typography variant="h4" sx={{ fontWeight: 700 }}>
@@ -570,7 +570,7 @@ const Dashboard: React.FC = () => {
                         </Typography>
                       </Box>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Box textAlign="center">
                         <Error sx={{ fontSize: 40, mb: 1 }} />
                         <Typography variant="h4" sx={{ fontWeight: 700 }}>
@@ -584,13 +584,13 @@ const Dashboard: React.FC = () => {
                   </Grid>
                 </Card>
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <Card sx={{ p: 3, background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', color: 'white' }}>
                   <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                     Priority Distribution
                   </Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Box textAlign="center">
                         <Typography variant="h4" sx={{ fontWeight: 700 }}>
                           {taskStats.critical_tasks}
@@ -600,7 +600,7 @@ const Dashboard: React.FC = () => {
                         </Typography>
                       </Box>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 6 }}>
                       <Box textAlign="center">
                         <Typography variant="h4" sx={{ fontWeight: 700 }}>
                           {taskStats.high_tasks}
@@ -617,17 +617,17 @@ const Dashboard: React.FC = () => {
           )}
 
           {/* Live Projects Overview - Jira-like interface */}
-          <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid item xs={12}>
+            <Grid container spacing={3} sx={{ mt: 2 }}>
+              <Grid size={12}>
               <LiveProjectsOverview />
             </Grid>
           </Grid>
 
-          <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid item xs={12} md={6}>
+            <Grid container spacing={3} sx={{ mt: 2 }}>
+              <Grid size={{ xs: 12, md: 6 }}>
               <RecentTasks />
-            </Grid>
-            <Grid item xs={12} md={6}>
+              </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
               <ProjectProgress />
             </Grid>
           </Grid>

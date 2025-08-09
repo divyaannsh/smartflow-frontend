@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Grid,
   Paper,
   Avatar,
   Chip,
@@ -18,6 +17,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import { Grid } from '@mui/material';
 import {
   Edit,
   Assignment,
@@ -153,7 +153,7 @@ const UserProfile: React.FC = () => {
 
       <Grid container spacing={3}>
         {/* User Info Card */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Paper sx={{ p: 3, textAlign: 'center' }}>
             <Avatar sx={{ width: 80, height: 80, mx: 'auto', mb: 2 }}>
               {userData.full_name.charAt(0)}
@@ -191,14 +191,14 @@ const UserProfile: React.FC = () => {
         </Grid>
 
         {/* Workload Overview */}
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Workload Overview
             </Typography>
             {workload && (
               <Grid container spacing={2}>
-                <Grid item xs={12}>
+                <Grid size={12}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                     <Typography variant="body2" color="text.secondary">
                       Progress
@@ -213,7 +213,7 @@ const UserProfile: React.FC = () => {
                     sx={{ height: 8, borderRadius: 4, mb: 2 }}
                   />
                 </Grid>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Box textAlign="center">
                     <Typography variant="h4" color="primary">
                       {workload.total_tasks}
@@ -223,7 +223,7 @@ const UserProfile: React.FC = () => {
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Box textAlign="center">
                     <Typography variant="h4" color="success.main">
                       {workload.done_tasks}
@@ -233,7 +233,7 @@ const UserProfile: React.FC = () => {
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Box textAlign="center">
                     <Typography variant="h4" color="warning.main">
                       {workload.in_progress_tasks}
@@ -243,7 +243,7 @@ const UserProfile: React.FC = () => {
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid item xs={6} sm={3}>
+                <Grid size={{ xs: 6, sm: 3 }}>
                   <Box textAlign="center">
                     <Typography variant="h4" color="error">
                       {workload.overdue_tasks}
@@ -259,7 +259,7 @@ const UserProfile: React.FC = () => {
         </Grid>
 
         {/* My Tasks */}
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               My Tasks ({userTasks.length})
@@ -271,7 +271,7 @@ const UserProfile: React.FC = () => {
             ) : (
               <Grid container spacing={2}>
                 {userTasks.map((task) => (
-                  <Grid item xs={12} sm={6} md={4} key={task.id}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={task.id}>
                     <Card>
                       <CardContent>
                         <Typography variant="subtitle1" gutterBottom>
