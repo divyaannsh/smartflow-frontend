@@ -237,6 +237,32 @@ export const projectsService = {
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Failed to delete project');
     }
+  },
+
+  async deleteAllTasks(projectId: number): Promise<void> {
+    try {
+      // First get all tasks for this project
+      const tasksResponse = await api.get(`/tasks?project_id=${projectId}`);
+      const tasks = tasksResponse.data;
+      
+      // Delete each task
+      const deletePromises = tasks.map((task: any) => 
+        api.delete(`/tasks/${task.id}`)
+      );
+      
+      await Promise.all(deletePromises);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to delete project tasks');
+    }
+  },
+
+  async deleteWithTasks(id: number): Promise<void> {
+    try {
+      // Use the new backend endpoint that handles both tasks and project deletion
+      await api.delete(`/projects/${id}/with-tasks`);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to delete project with tasks');
+    }
   }
 };
 

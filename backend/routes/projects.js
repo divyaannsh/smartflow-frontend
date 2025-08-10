@@ -254,6 +254,55 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// Delete project with all its tasks
+router.delete('/:id/with-tasks', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const db = getDatabase();
+    
+    // Start a transaction
+    db.serialize(() => {
+      db.run('BEGIN TRANSACTION');
+      
+      // Delete all tasks for this project
+      db.run('DELETE FROM tasks WHERE project_id = ?', [id], function(err) {
+        if (err) {
+          console.error('Database error deleting tasks:', err);
+          db.run('ROLLBACK');
+          return res.status(500).json({ error: 'Database error deleting tasks' });
+        }
+        
+        // Delete the project
+        db.run('DELETE FROM projects WHERE id = ?', [id], function(err) {
+          if (err) {
+            console.error('Database error deleting project:', err);
+            db.run('ROLLBACK');
+            return res.status(500).json({ error: 'Database error deleting project' });
+          }
+          
+          if (this.changes === 0) {
+            db.run('ROLLBACK');
+            return res.status(404).json({ error: 'Project not found' });
+          }
+          
+          // Commit the transaction
+          db.run('COMMIT', function(err) {
+            if (err) {
+              console.error('Database error committing transaction:', err);
+              return res.status(500).json({ error: 'Database error committing transaction' });
+            }
+            
+            res.json({ message: 'Project and all associated tasks deleted successfully' });
+          });
+        });
+      });
+    });
+  } catch (error) {
+    console.error('Error deleting project with tasks:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Get project statistics
 router.get('/:id/stats', async (req, res) => {
   try {

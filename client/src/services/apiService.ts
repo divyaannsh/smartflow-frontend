@@ -249,6 +249,14 @@ export const projectsService = {
     }
   },
 
+  async deleteWithTasks(id: number): Promise<void> {
+    try {
+      await api.delete(`/projects/${id}/with-tasks`);
+    } catch (error) {
+      throw new Error('Project deletion with tasks not available in demo mode');
+    }
+  },
+
   async getStats(id: number): Promise<ProjectStats> {
     try {
       const response = await api.get(`/projects/${id}/stats`);

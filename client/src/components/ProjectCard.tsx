@@ -17,10 +17,11 @@ interface ProjectCardProps {
   project: Project;
   onEdit: (project: Project) => void;
   onDelete: (project: Project) => void;
+  onDeleteWithTasks: (project: Project) => void;
   onView: (project: Project) => void;
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, onEdit, onDelete, onView }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({ project, onEdit, onDelete, onDeleteWithTasks, onView }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -125,6 +126,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onEdit, onDelete, on
         <MenuItem onClick={() => { console.log('Delete clicked for project:', project.id); onDelete(project); handleMenuClose(); }}>
           <Delete fontSize="small" sx={{ mr: 1 }} />
           Delete
+        </MenuItem>
+        <MenuItem onClick={() => { console.log('Delete with tasks clicked for project:', project.id); onDeleteWithTasks(project); handleMenuClose(); }}>
+          <Delete fontSize="small" sx={{ mr: 1 }} />
+          Delete with Tasks
         </MenuItem>
       </Menu>
     </Card>
