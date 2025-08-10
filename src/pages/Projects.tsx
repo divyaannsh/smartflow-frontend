@@ -33,6 +33,8 @@ const Projects: React.FC = () => {
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [deleteWithTasksDialogOpen, setDeleteWithTasksDialogOpen] = useState(false);
+  const [projectToDeleteWithTasks, setProjectToDeleteWithTasks] = useState<Project | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -60,7 +62,32 @@ const Projects: React.FC = () => {
       setDeleteDialogOpen(false);
       setProjectToDelete(null);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to delete project');
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to delete project';
+      
+      // Check if it's the "has tasks" error
+      if (errorMessage.includes('existing tasks')) {
+        setError(`Cannot delete project "${projectToDelete.name}" because it has associated tasks. Please use "Delete with Tasks" option instead.`);
+        // Close the delete dialog and show the delete with tasks dialog instead
+        setDeleteDialogOpen(false);
+        setProjectToDeleteWithTasks(projectToDelete);
+        setDeleteWithTasksDialogOpen(true);
+      } else {
+        setError(errorMessage);
+      }
+    }
+  };
+
+  const handleDeleteProjectWithTasks = async () => {
+    if (!projectToDeleteWithTasks) return;
+    
+    try {
+      await projectsService.deleteWithTasks(projectToDeleteWithTasks.id);
+      setProjects(projects.filter(p => p.id !== projectToDeleteWithTasks.id));
+      setDeleteWithTasksDialogOpen(false);
+      setProjectToDeleteWithTasks(null);
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to delete project with tasks';
+      setError(errorMessage);
     }
   };
 
@@ -87,6 +114,12 @@ const Projects: React.FC = () => {
     console.log('Delete project clicked:', project.id);
     setProjectToDelete(project);
     setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteProjectWithTasksClick = (project: Project) => {
+    console.log('Delete project with tasks clicked:', project.id);
+    setProjectToDeleteWithTasks(project);
+    setDeleteWithTasksDialogOpen(true);
   };
 
   if (loading) {
@@ -189,6 +222,7 @@ const Projects: React.FC = () => {
                 project={project}
                 onEdit={handleEditProject}
                 onDelete={handleDeleteProjectClick}
+                onDeleteWithTasks={handleDeleteProjectWithTasksClick}
                 onView={handleViewProject}
               />
             </Grid>
@@ -208,6 +242,23 @@ const Projects: React.FC = () => {
             Cancel
           </Button>
           <Button onClick={handleDeleteProject} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={deleteWithTasksDialogOpen} onClose={() => setDeleteWithTasksDialogOpen(false)}>
+        <DialogTitle>Delete Project with Tasks</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete "{projectToDeleteWithTasks?.name}" and all its associated tasks? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteWithTasksDialogOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteProjectWithTasks} color="error" variant="contained">
             Delete
           </Button>
         </DialogActions>
