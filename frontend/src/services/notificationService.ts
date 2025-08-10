@@ -120,7 +120,8 @@ export const notificationService = {
 // Local notification manager for in-app notifications
 class LocalNotificationManager {
   private notifications: UserNotification[] = [];
-  private subscribers: ((notifications: UserNotification[]) => void)[] = [];
+  private subscribers: Set<(notifications: UserNotification[]) => void> = new Set();
+  private idCounter = 0;
 
   constructor() {
     this.loadNotifications();
@@ -145,18 +146,19 @@ class LocalNotificationManager {
   }
 
   subscribe(callback: (notifications: UserNotification[]) => void) {
-    this.subscribers.push(callback);
+    this.subscribers.add(callback);
     callback([...this.notifications]);
     
     return () => {
-      this.subscribers = this.subscribers.filter(cb => cb !== callback);
+      this.subscribers.delete(callback);
     };
   }
 
   addNotification(notification: Omit<UserNotification, 'id' | 'timestamp'> & { timestamp?: Date }) {
+    this.idCounter += 1;
     const newNotification: UserNotification = {
       ...notification,
-      id: Date.now().toString(),
+      id: `${Date.now()}-${this.idCounter}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: notification.timestamp ? new Date(notification.timestamp) : new Date()
     };
     
@@ -206,7 +208,7 @@ export const notificationManager = new LocalNotificationManager();
 // Simulate admin message and convert to notification
 export const simulateAdminMessage = (content: string, senderId: number, senderName: string, targetUsers?: number[]): void => {
   const adminMessage: AdminMessage = {
-    id: Date.now().toString(),
+    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     title: 'Admin Message',
     content,
     senderId,

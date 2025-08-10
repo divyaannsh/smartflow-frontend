@@ -94,7 +94,7 @@ const TeamChat: React.FC = () => {
   const handleSendMessage = async () => {
     if (inputMessage.trim() !== '' && user) {
       const newMessage: ChatMessage = {
-        id: Date.now().toString(),
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         content: inputMessage,
         sender: {
           id: user.id,

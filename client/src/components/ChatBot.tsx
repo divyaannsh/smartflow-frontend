@@ -100,7 +100,7 @@ How can I assist you today?`,
     if (!inputMessage.trim() || isLoading) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       content: inputMessage,
       sender: 'user',
       timestamp: new Date(),
@@ -118,7 +118,7 @@ How can I assist you today?`,
       const aiResponse = await generateAIResponse(inputMessage, userRole);
       
       const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         content: aiResponse,
         sender: 'ai',
         timestamp: new Date(),

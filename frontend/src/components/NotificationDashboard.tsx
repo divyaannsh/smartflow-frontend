@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Card,
@@ -6,30 +6,28 @@ import {
   Typography,
   List,
   ListItem,
-  ListItemText,
   ListItemIcon,
-  Avatar,
-  Chip,
+  ListItemText,
   IconButton,
-  Collapse,
   Button,
-  Divider,
-  Alert,
+  Chip,
+  Collapse,
+  Avatar,
 } from '@mui/material';
 import {
-  Notifications,
   NotificationsActive,
   CheckCircle,
   Warning,
   Error,
   Info,
+  Notifications,
   ExpandMore,
   ExpandLess,
-  Clear,
   MarkEmailRead,
+  Clear,
 } from '@mui/icons-material';
-import { notificationManager, UserNotification } from '../services/notificationService';
 import { useAuth } from '../contexts/AuthContext';
+import { notificationManager, UserNotification } from '../services/notificationService';
 
 interface NotificationDashboardProps {
   maxNotifications?: number;
@@ -43,6 +41,13 @@ const NotificationDashboard: React.FC<NotificationDashboardProps> = ({
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [expanded, setExpanded] = useState(false);
+  const idCounter = useRef(0);
+
+  // Generate unique ID to avoid duplication
+  const generateUniqueId = () => {
+    idCounter.current += 1;
+    return `${Date.now()}-${idCounter.current}-${Math.random().toString(36).substr(2, 9)}`;
+  };
 
   useEffect(() => {
     // Load server notifications once on mount
@@ -82,25 +87,35 @@ const NotificationDashboard: React.FC<NotificationDashboardProps> = ({
       setNotifications(sorted.slice(0, maxNotifications));
     });
 
-    // Connect SSE for real-time updates
+    // Connect SSE for real-time updates with token in query parameter
     let eventSource: EventSource | null = null;
     (async () => {
       try {
-        const apiModule = await import('../services/apiService');
-        const baseURL = (apiModule as any).default.defaults.baseURL?.replace(/\/api$/, '') || '';
-        eventSource = new EventSource(`${baseURL}/api/notifications/stream`);
-        eventSource.addEventListener('notification', (e: MessageEvent) => {
-          try {
-            const n = JSON.parse(e.data);
-            notificationManager.addNotification({
-              title: n.title,
-              message: n.message,
-              type: n.type,
-              read: false,
-              senderName: n.senderName,
-            });
-          } catch {}
-        });
+        const token = localStorage.getItem('token');
+        if (token) {
+          const apiModule = await import('../services/apiService');
+          const baseURL = (apiModule as any).default.defaults.baseURL?.replace(/\/api$/, '') || '';
+          eventSource = new EventSource(`${baseURL}/api/notifications/stream?token=${encodeURIComponent(token)}`);
+          eventSource.addEventListener('notification', (e: MessageEvent) => {
+            try {
+              const n = JSON.parse(e.data);
+              notificationManager.addNotification({
+                title: n.title,
+                message: n.message,
+                type: n.type,
+                read: false,
+                senderName: n.senderName,
+              });
+            } catch {}
+          });
+          eventSource.onerror = (error) => {
+            console.error('SSE connection error:', error);
+            if (eventSource) {
+              eventSource.close();
+              eventSource = null;
+            }
+          };
+        }
       } catch {}
     })();
 
@@ -114,7 +129,10 @@ const NotificationDashboard: React.FC<NotificationDashboardProps> = ({
 
     return () => {
       unsubscribe();
-      if (eventSource) eventSource.close();
+      if (eventSource) {
+        eventSource.close();
+        eventSource = null;
+      }
     };
   }, [maxNotifications, showUnreadOnly]);
 

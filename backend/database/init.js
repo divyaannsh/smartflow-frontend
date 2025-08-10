@@ -41,40 +41,10 @@ const createInMemoryData = () => {
         updated_at: new Date().toISOString()
       }
     ],
-    projects: [
-      {
-        id: 1,
-        name: 'Website Redesign',
-        description: 'Complete redesign of company website',
-        status: 'active',
-        priority: 'high',
-        deadline: '2024-12-31',
-        created_by: 1,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    ],
-    tasks: [
-      {
-        id: 1,
-        title: 'Design Homepage',
-        description: 'Create new homepage design',
-        status: 'todo',
-        priority: 'high',
-        deadline: '2024-09-15',
-        project_id: 1,
-        assigned_to: 2,
-        created_by: 1,
-        estimated_hours: 8.0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    ],
+    projects: [],
+    tasks: [],
     comments: [],
-    project_members: [
-      { project_id: 1, user_id: 1, role: 'admin', joined_at: new Date().toISOString() },
-      { project_id: 1, user_id: 2, role: 'member', joined_at: new Date().toISOString() }
-    ]
+    project_members: []
   };
 };
 
@@ -271,42 +241,7 @@ function initializeDatabase() {
           }
         });
 
-        // Insert sample data
-        db.run(`
-          INSERT OR IGNORE INTO projects (name, description, status, priority, deadline, created_by)
-          VALUES ('Website Redesign', 'Complete redesign of company website', 'active', 'high', '2024-12-31', 1)
-        `, (err) => {
-          if (err) {
-            console.error('Error inserting sample project:', err);
-          }
-        });
-
-        db.run(`
-          INSERT OR IGNORE INTO tasks (title, description, status, priority, deadline, project_id, assigned_to, created_by, estimated_hours)
-          VALUES ('Design Homepage', 'Create new homepage design', 'todo', 'high', '2024-09-15', 1, 2, 1, 8.0)
-        `, (err) => {
-          if (err) {
-            console.error('Error inserting sample task:', err);
-          }
-        });
-
-        db.run(`
-          INSERT OR IGNORE INTO project_members (project_id, user_id, role)
-          VALUES (1, 1, 'admin')
-        `, (err) => {
-          if (err) {
-            console.error('Error inserting project member:', err);
-          }
-        });
-
-        db.run(`
-          INSERT OR IGNORE INTO project_members (project_id, user_id, role)
-          VALUES (1, 2, 'member')
-        `, (err) => {
-          if (err) {
-            console.error('Error inserting project member:', err);
-          }
-        });
+        // Sample data insertion removed - database will start clean
 
         db.run('PRAGMA foreign_keys = ON');
         

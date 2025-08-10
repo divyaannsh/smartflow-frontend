@@ -180,7 +180,14 @@ const ProjectDetail: React.FC = () => {
       await projectsService.delete(parseInt(id!));
       navigate('/projects');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to delete project');
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to delete project';
+      
+      // Check if it's the "has tasks" error
+      if (errorMessage.includes('existing tasks')) {
+        setError(`Cannot delete project "${project?.name}" because it has ${tasks.length} associated task(s). Please delete or reassign all tasks first before deleting the project.`);
+      } else {
+        setError(errorMessage);
+      }
     }
   };
 
