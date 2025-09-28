@@ -261,7 +261,7 @@ const AdminDashboard: React.FC = () => {
           </Box>
           
           <Grid container spacing={2}>
-            <Grid size={{ xs: 6 }}>
+            <Grid item xs={6}>
               <Box sx={{ textAlign: 'center', p: 2 }}>
                 <Typography variant="h4" sx={{ fontWeight: 700, color: 'success.main' }}>
                   {projects.filter(p => p.status === 'active').length}
@@ -271,7 +271,7 @@ const AdminDashboard: React.FC = () => {
                 </Typography>
               </Box>
             </Grid>
-            <Grid size={{ xs: 6 }}>
+            <Grid item xs={6}>
               <Box sx={{ textAlign: 'center', p: 2 }}>
                 <Typography variant="h4" sx={{ fontWeight: 700, color: 'warning.main' }}>
                   {getOverdueTasks().length}
@@ -281,7 +281,7 @@ const AdminDashboard: React.FC = () => {
                 </Typography>
               </Box>
             </Grid>
-            <Grid size={{ xs: 6 }}>
+            <Grid item xs={6}>
               <Box sx={{ textAlign: 'center', p: 2 }}>
                 <Typography variant="h4" sx={{ fontWeight: 700, color: 'info.main' }}>
                   {users.filter(u => u.role === 'admin').length}
@@ -291,7 +291,7 @@ const AdminDashboard: React.FC = () => {
                 </Typography>
               </Box>
             </Grid>
-            <Grid size={{ xs: 6 }}>
+            <Grid item xs={6}>
               <Box sx={{ textAlign: 'center', p: 2 }}>
                 <Typography variant="h4" sx={{ fontWeight: 700, color: 'error.main' }}>
                   {getCriticalTasks().length}
@@ -636,7 +636,7 @@ const AdminDashboard: React.FC = () => {
           )}
 
           <Grid container spacing={3}>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid item xs={12} sm={6} md={3}>
               <AdminStatCard
                 title="Total Users"
                 value={users.length}
@@ -647,7 +647,7 @@ const AdminDashboard: React.FC = () => {
                 trendDirection="up"
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid item xs={12} sm={6} md={3}>
               <AdminStatCard
                 title="Active Projects"
                 value={projects.filter(p => p.status === 'active').length}
@@ -658,7 +658,7 @@ const AdminDashboard: React.FC = () => {
                 trendDirection="up"
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid item xs={12} sm={6} md={3}>
               <AdminStatCard
                 title="Total Tasks"
                 value={tasks.length}
@@ -669,7 +669,7 @@ const AdminDashboard: React.FC = () => {
                 trendDirection="down"
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid item xs={12} sm={6} md={3}>
               <AdminStatCard
                 title="Critical Issues"
                 value={getCriticalTasks().length}
@@ -683,19 +683,19 @@ const AdminDashboard: React.FC = () => {
           </Grid>
 
           <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid item xs={12} md={4}>
               <SystemOverview />
             </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid item xs={12} md={4}>
               <TeamPerformance />
             </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid item xs={12} md={4}>
               <CriticalTasksAlert />
             </Grid>
           </Grid>
 
           <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid size={12}>
+            <Grid item xs={12}>
               <ProjectManagement />
             </Grid>
           </Grid>

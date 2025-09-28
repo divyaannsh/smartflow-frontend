@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import {
   Box,
@@ -15,22 +15,12 @@ import {
   Chip,
   Avatar,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   FormHelperText,
 } from '@mui/material';
 import { Grid } from '@mui/material';
 import {
   Save,
-  Cancel,
   ArrowBack,
-  Assignment,
-  Schedule,
-  Person,
-  PriorityHigh,
-  Description,
 } from '@mui/icons-material';
 import { tasksService, projectsService, usersService } from '../services/apiService';
 import { Task, Project, User } from '../types';
@@ -69,13 +59,9 @@ const TaskForm: React.FC = () => {
     assigned_to: '',
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({  });
 
-  useEffect(() => {
-    loadInitialData();
-  }, [id]);
-
-  const loadInitialData = async () => {
+  const loadInitialData = useCallback(async () => {
     try {
       setLoading(true);
       const [projectsData, usersData] = await Promise.all([
@@ -105,7 +91,11 @@ const TaskForm: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, isEditing]);
+
+  useEffect(() => {
+    loadInitialData();
+  }, [id, loadInitialData]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -237,13 +227,13 @@ const TaskForm: React.FC = () => {
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
             {/* Basic Information */}
-            <Grid size={12}>
+            <Grid item xs={12}>
               <Typography variant="h6" gutterBottom>
                 Basic Information
               </Typography>
             </Grid>
 
-            <Grid size={12}>
+            <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Task Title"
@@ -256,7 +246,7 @@ const TaskForm: React.FC = () => {
               />
             </Grid>
 
-            <Grid size={12}>
+            <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Description"
@@ -268,7 +258,7 @@ const TaskForm: React.FC = () => {
               />
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid item xs={12} sm={6}>
               <FormControl fullWidth error={!!errors.project_id}>
                 <InputLabel>Project *</InputLabel>
                 <Select
@@ -297,7 +287,7 @@ const TaskForm: React.FC = () => {
               </FormControl>
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Assigned To</InputLabel>
                 <Select
@@ -323,13 +313,13 @@ const TaskForm: React.FC = () => {
             </Grid>
 
             {/* Task Details */}
-            <Grid size={12}>
+            <Grid item xs={12}>
               <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
                 Task Details
               </Typography>
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Status</InputLabel>
                 <Select
@@ -365,7 +355,7 @@ const TaskForm: React.FC = () => {
               </FormControl>
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Priority</InputLabel>
                 <Select
@@ -401,7 +391,7 @@ const TaskForm: React.FC = () => {
               </FormControl>
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Deadline"
@@ -414,7 +404,7 @@ const TaskForm: React.FC = () => {
               />
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Estimated Hours"
@@ -428,7 +418,7 @@ const TaskForm: React.FC = () => {
             </Grid>
 
             {/* Action Buttons */}
-            <Grid size={12}>
+            <Grid item xs={12}>
               <Box display="flex" gap={2} justifyContent="flex-end" sx={{ mt: 3 }}>
                 <Button
                   variant="outlined"

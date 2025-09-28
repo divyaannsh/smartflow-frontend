@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
   Paper,
-  Card,
-  CardContent,
   Chip,
   Button,
   LinearProgress,
@@ -23,13 +21,11 @@ import {
   MenuItem,
   Alert,
   CircularProgress,
-  Divider,
   List,
   ListItem,
   ListItemText,
   ListItemAvatar,
   Tooltip,
-  Badge,
   Tabs,
   Tab,
   Table,
@@ -44,18 +40,7 @@ import {
   Edit,
   Delete,
   Add,
-  Assignment,
-  Schedule,
-  Person,
-  Group,
-  TrendingUp,
-  Warning,
-  CheckCircle,
-  Error,
   Visibility,
-  AttachFile,
-  Comment,
-  MoreVert,
   ArrowBack,
 } from '@mui/icons-material';
 import { projectsService, tasksService, usersService } from '../services/apiService';
@@ -111,13 +96,7 @@ const ProjectDetail: React.FC = () => {
     deadline: '',
   });
 
-  useEffect(() => {
-    if (id) {
-      loadProjectData();
-    }
-  }, [id]);
-
-  const loadProjectData = async () => {
+  const loadProjectData = useCallback(async () => {
     try {
       setLoading(true);
       const [projectData, tasksData, usersData] = await Promise.all([
@@ -149,7 +128,13 @@ const ProjectDetail: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      loadProjectData();
+    }
+  }, [id, loadProjectData]);
 
   const handleAddMember = async () => {
     if (!selectedMember) return;
@@ -281,7 +266,7 @@ const ProjectDetail: React.FC = () => {
 
       {/* Project Overview */}
       <Grid container spacing={3} mb={3}>
-        <Grid size={{ xs: 12, md: 8 }}>
+        <Grid item xs={12} md={8}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Project Overview
@@ -291,7 +276,7 @@ const ProjectDetail: React.FC = () => {
             </Typography>
             
             <Grid container spacing={2} mb={3}>
-              <Grid size={{ xs: 6, sm: 3 }}>
+              <Grid item xs={6} sm={3}>
                 <Box textAlign="center">
                   <Typography variant="h4" color="primary">
                     {tasks.length}
@@ -301,7 +286,7 @@ const ProjectDetail: React.FC = () => {
                   </Typography>
                 </Box>
               </Grid>
-              <Grid size={{ xs: 6, sm: 3 }}>
+              <Grid item xs={6} sm={3}>
                 <Box textAlign="center">
                   <Typography variant="h4" color="success.main">
                     {getTaskStatusCount('done')}
@@ -311,7 +296,7 @@ const ProjectDetail: React.FC = () => {
                   </Typography>
                 </Box>
               </Grid>
-              <Grid size={{ xs: 6, sm: 3 }}>
+              <Grid item xs={6} sm={3}>
                 <Box textAlign="center">
                   <Typography variant="h4" color="warning.main">
                     {getTaskStatusCount('in_progress')}
@@ -321,7 +306,7 @@ const ProjectDetail: React.FC = () => {
                   </Typography>
                 </Box>
               </Grid>
-              <Grid size={{ xs: 6, sm: 3 }}>
+              <Grid item xs={6} sm={3}>
                 <Box textAlign="center">
                   <Typography variant="h4" color="info.main">
                     {getTaskStatusCount('todo')}
@@ -349,7 +334,7 @@ const ProjectDetail: React.FC = () => {
           </Paper>
         </Grid>
 
-        <Grid size={{ xs: 12, md: 4 }}>
+        <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Project Details

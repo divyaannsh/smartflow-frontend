@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -20,17 +20,11 @@ import {
 import { Grid } from '@mui/material';
 import {
   Edit,
-  Assignment,
-  Schedule,
-  CheckCircle,
-  Warning,
-  Error,
   Person,
   Email,
-  Work,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { usersService, tasksService } from '../services/apiService';
+import { usersService } from '../services/apiService';
 import { User, Task, UserWorkload } from '../types';
 
 const UserProfile: React.FC = () => {
@@ -46,13 +40,7 @@ const UserProfile: React.FC = () => {
     email: '',
   });
 
-  useEffect(() => {
-    if (user) {
-      loadUserData();
-    }
-  }, [user]);
-
-  const loadUserData = async () => {
+  const loadUserData = useCallback(async () => {
     try {
       setLoading(true);
       const [userInfo, tasks, workloadData] = await Promise.all([
@@ -73,7 +61,7 @@ const UserProfile: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const handleEditProfile = async () => {
     try {
@@ -153,7 +141,7 @@ const UserProfile: React.FC = () => {
 
       <Grid container spacing={3}>
         {/* User Info Card */}
-        <Grid size={{ xs: 12, md: 4 }}>
+        <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3, textAlign: 'center' }}>
             <Avatar sx={{ width: 80, height: 80, mx: 'auto', mb: 2 }}>
               {userData.full_name.charAt(0)}
@@ -191,14 +179,14 @@ const UserProfile: React.FC = () => {
         </Grid>
 
         {/* Workload Overview */}
-        <Grid size={{ xs: 12, md: 8 }}>
+        <Grid item xs={12} md={8}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Workload Overview
             </Typography>
             {workload && (
               <Grid container spacing={2}>
-                <Grid size={12}>
+                <Grid item xs={12}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                     <Typography variant="body2" color="text.secondary">
                       Progress
@@ -213,7 +201,7 @@ const UserProfile: React.FC = () => {
                     sx={{ height: 8, borderRadius: 4, mb: 2 }}
                   />
                 </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
+                <Grid item xs={6} sm={3}>
                   <Box textAlign="center">
                     <Typography variant="h4" color="primary">
                       {workload.total_tasks}
@@ -223,7 +211,7 @@ const UserProfile: React.FC = () => {
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
+                <Grid item xs={6} sm={3}>
                   <Box textAlign="center">
                     <Typography variant="h4" color="success.main">
                       {workload.done_tasks}
@@ -233,7 +221,7 @@ const UserProfile: React.FC = () => {
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
+                <Grid item xs={6} sm={3}>
                   <Box textAlign="center">
                     <Typography variant="h4" color="warning.main">
                       {workload.in_progress_tasks}
@@ -243,7 +231,7 @@ const UserProfile: React.FC = () => {
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
+                <Grid item xs={6} sm={3}>
                   <Box textAlign="center">
                     <Typography variant="h4" color="error">
                       {workload.overdue_tasks}
@@ -259,7 +247,7 @@ const UserProfile: React.FC = () => {
         </Grid>
 
         {/* My Tasks */}
-        <Grid size={12}>
+        <Grid item xs={12}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               My Tasks ({userTasks.length})
@@ -271,7 +259,7 @@ const UserProfile: React.FC = () => {
             ) : (
               <Grid container spacing={2}>
                 {userTasks.map((task) => (
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={task.id}>
+                  <Grid item xs={12} sm={6} md={4} key={task.id}>
                     <Card>
                       <CardContent>
                         <Typography variant="subtitle1" gutterBottom>

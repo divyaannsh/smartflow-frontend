@@ -79,7 +79,7 @@ const ProjectForm: React.FC = () => {
       <Paper sx={{ p: 3 }}>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
-            <Grid size={12}>
+            <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Project Name"
@@ -89,7 +89,7 @@ const ProjectForm: React.FC = () => {
               />
             </Grid>
 
-            <Grid size={12}>
+            <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Description"
@@ -100,7 +100,7 @@ const ProjectForm: React.FC = () => {
               />
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Status</InputLabel>
                 <Select
@@ -115,7 +115,7 @@ const ProjectForm: React.FC = () => {
               </FormControl>
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel>Priority</InputLabel>
                 <Select
@@ -131,7 +131,7 @@ const ProjectForm: React.FC = () => {
               </FormControl>
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Deadline"
@@ -142,7 +142,7 @@ const ProjectForm: React.FC = () => {
               />
             </Grid>
 
-            <Grid size={12}>
+            <Grid item xs={12}>
               <Box display="flex" gap={2} justifyContent="flex-end">
                 <Button variant="outlined" onClick={() => navigate('/projects')}>
                   <Cancel sx={{ mr: 1 }} /> Cancel

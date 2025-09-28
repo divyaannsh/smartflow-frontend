@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -14,7 +14,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  IconButton,
   Chip,
 } from '@mui/material';
 import { Grid } from '@mui/material';
@@ -22,7 +21,9 @@ import { Add, Search, FilterList } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { projectsService } from '../services/apiService';
 import { Project } from '../types';
-import ProjectCard from '../components/ProjectCard';
+import ProjectCardMemo from '../components/ProjectCardMemo';
+import { useDebounce } from '../hooks/useDebounce';
+import VirtualScroll from '../components/VirtualScroll';
 
 const Projects: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -31,6 +32,9 @@ const Projects: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  
+  // Debounce search term to prevent excessive filtering
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [deleteWithTasksDialogOpen, setDeleteWithTasksDialogOpen] = useState(false);
@@ -91,14 +95,17 @@ const Projects: React.FC = () => {
     }
   };
 
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (project.description && project.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
-    const matchesPriority = priorityFilter === 'all' || project.priority === priorityFilter;
-    
-    return matchesSearch && matchesStatus && matchesPriority;
-  });
+  // Memoized filtered projects for better performance
+  const filteredProjects = useMemo(() => {
+    return projects.filter(project => {
+      const matchesSearch = project.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                           (project.description && project.description.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
+      const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
+      const matchesPriority = priorityFilter === 'all' || project.priority === priorityFilter;
+      
+      return matchesSearch && matchesStatus && matchesPriority;
+    });
+  }, [projects, debouncedSearchTerm, statusFilter, priorityFilter]);
 
   const handleViewProject = (project: Project) => {
     console.log('View project clicked:', project.id);
@@ -151,7 +158,7 @@ const Projects: React.FC = () => {
 
       <Box sx={{ mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid size={{ xs: 12, md: 4 }}>
+          <Grid item xs={12} md={4}>
             <TextField
               fullWidth
               placeholder="Search projects..."
@@ -162,7 +169,7 @@ const Projects: React.FC = () => {
               }}
             />
           </Grid>
-          <Grid size={{ xs: 12, md: 3 }}>
+          <Grid item xs={12} md={3}>
             <FormControl fullWidth>
               <InputLabel>Status</InputLabel>
               <Select
@@ -177,7 +184,7 @@ const Projects: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid size={{ xs: 12, md: 3 }}>
+          <Grid item xs={12} md={3}>
             <FormControl fullWidth>
               <InputLabel>Priority</InputLabel>
               <Select
@@ -193,7 +200,7 @@ const Projects: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid size={{ xs: 12, md: 2 }}>
+          <Grid item xs={12} md={2}>
             <Chip
               icon={<FilterList />}
               label={`${filteredProjects.length} projects`}
@@ -214,11 +221,32 @@ const Projects: React.FC = () => {
               : 'Create your first project to get started'}
           </Typography>
         </Box>
+      ) : filteredProjects.length > 20 ? (
+        // Use virtual scrolling for large lists
+        <VirtualScroll
+          items={filteredProjects}
+          itemHeight={300} // Approximate height of ProjectCard
+          containerHeight={600}
+          renderItem={(project) => (
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6} md={4}>
+                <ProjectCardMemo
+                  project={project}
+                  onEdit={handleEditProject}
+                  onDelete={handleDeleteProjectClick}
+                  onDeleteWithTasks={handleDeleteProjectWithTasksClick}
+                  onView={handleViewProject}
+                />
+              </Grid>
+            </Grid>
+          )}
+        />
       ) : (
+        // Regular grid for smaller lists
         <Grid container spacing={3}>
           {filteredProjects.map((project) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={project.id}>
-              <ProjectCard
+            <Grid item xs={12} sm={6} md={4} key={project.id}>
+              <ProjectCardMemo
                 project={project}
                 onEdit={handleEditProject}
                 onDelete={handleDeleteProjectClick}

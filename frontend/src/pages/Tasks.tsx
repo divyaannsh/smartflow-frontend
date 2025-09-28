@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -13,10 +13,6 @@ import {
   MenuItem,
   Alert,
   CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   IconButton,
   Avatar,
   Tooltip,
@@ -26,14 +22,14 @@ import {
   Add,
   Search,
   FilterList,
-  Assignment,
   Schedule,
-  Person,
   Edit,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { tasksService } from '../services/apiService';
 import { Task } from '../types';
+import { useDebounce } from '../hooks/useDebounce';
+import VirtualScroll from '../components/VirtualScroll';
 
 const Tasks: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -43,6 +39,9 @@ const Tasks: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
+  
+  // Debounce search term to prevent excessive filtering
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -72,14 +71,17 @@ const Tasks: React.FC = () => {
     }
   };
 
-  const filteredTasks = tasks.filter(task => {
-    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
-    const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
-    
-    return matchesSearch && matchesStatus && matchesPriority;
-  });
+  // Memoized filtered tasks for better performance
+  const filteredTasks = useMemo(() => {
+    return tasks.filter(task => {
+      const matchesSearch = task.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                           (task.description && task.description.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
+      const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
+      const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
+      
+      return matchesSearch && matchesStatus && matchesPriority;
+    });
+  }, [tasks, debouncedSearchTerm, statusFilter, priorityFilter]);
 
   const getStatusTasks = (status: string) => {
     return filteredTasks.filter(task => task.status === status);
@@ -238,7 +240,7 @@ const Tasks: React.FC = () => {
 
       <Box sx={{ mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid size={{ xs: 12, md: 4 }}>
+          <Grid item xs={12} md={4}>
             <TextField
               fullWidth
               placeholder="Search tasks..."
@@ -249,7 +251,7 @@ const Tasks: React.FC = () => {
               }}
             />
           </Grid>
-          <Grid size={{ xs: 12, md: 2 }}>
+          <Grid item xs={12} md={2}>
             <FormControl fullWidth>
               <InputLabel>Status</InputLabel>
               <Select
@@ -265,7 +267,7 @@ const Tasks: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid size={{ xs: 12, md: 2 }}>
+          <Grid item xs={12} md={2}>
             <FormControl fullWidth>
               <InputLabel>Priority</InputLabel>
               <Select
@@ -281,7 +283,7 @@ const Tasks: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid size={{ xs: 12, md: 2 }}>
+          <Grid item xs={12} md={2}>
             <Button
               variant={viewMode === 'kanban' ? 'contained' : 'outlined'}
               onClick={() => setViewMode('kanban')}
@@ -290,7 +292,7 @@ const Tasks: React.FC = () => {
               Kanban
             </Button>
           </Grid>
-          <Grid size={{ xs: 12, md: 2 }}>
+          <Grid item xs={12} md={2}>
             <Chip
               icon={<FilterList />}
               label={`${filteredTasks.length} tasks`}
@@ -316,7 +318,7 @@ const Tasks: React.FC = () => {
           {statusColumns.map((column) => {
             const columnTasks = getStatusTasks(column.key);
             return (
-              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={column.key}>
+              <Grid item xs={12} sm={6} md={3} key={column.key}>
                 <Box
                   sx={{
                     backgroundColor: column.color,
@@ -339,7 +341,7 @@ const Tasks: React.FC = () => {
       ) : (
         <Grid container spacing={2}>
           {filteredTasks.map((task) => (
-            <Grid size={12} key={task.id}>
+            <Grid item xs={12} key={task.id}>
               <TaskCard task={task} />
             </Grid>
           ))}

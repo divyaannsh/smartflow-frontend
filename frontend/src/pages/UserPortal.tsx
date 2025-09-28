@@ -4,7 +4,6 @@ import {
   Typography,
   Card,
   CardContent,
-  Paper,
   CircularProgress,
   Alert,
   Table,
@@ -21,7 +20,6 @@ import {
   Grow,
   useTheme,
   alpha,
-  Divider,
   List,
   ListItem,
   ListItemText,
@@ -29,7 +27,6 @@ import {
   ListItemSecondaryAction,
   IconButton,
   Tooltip,
-  Badge,
 } from '@mui/material';
 import { Grid } from '@mui/material';
 import {
@@ -38,29 +35,19 @@ import {
   Schedule,
   CheckCircle,
   Warning,
-  Error,
   Visibility,
   Edit,
   Add,
   TrendingUp,
   TrendingDown,
-  Speed,
-  Timeline,
   CalendarToday,
   PriorityHigh,
   Done,
   Pending,
   Block,
   Work,
-  Timer,
-  Assessment,
-  BarChart,
-  PieChart,
-  Notifications,
-  Star,
   EmojiEvents,
-  Psychology,
-  Lightbulb,
+  Timeline,
 } from '@mui/icons-material';
 import { projectsService, tasksService, usersService } from '../services/apiService';
 import NotificationDashboard from '../components/NotificationDashboard';
@@ -269,7 +256,7 @@ const UserPortal: React.FC = () => {
             </Box>
             
             <Grid container spacing={3}>
-              <Grid size={6}>
+              <Grid item xs={6}>
                 <Box sx={{ textAlign: 'center', p: 2 }}>
                   <Typography variant="h4" sx={{ fontWeight: 700, color: 'success.main' }}>
                     {Math.round(completionRate)}%
@@ -284,7 +271,7 @@ const UserPortal: React.FC = () => {
                   />
                 </Box>
               </Grid>
-              <Grid size={6}>
+              <Grid item xs={6}>
                 <Box sx={{ textAlign: 'center', p: 2 }}>
                   <Typography variant="h4" sx={{ fontWeight: 700, color: 'info.main' }}>
                     {Math.round(productivityScore)}%
@@ -299,7 +286,7 @@ const UserPortal: React.FC = () => {
                   />
                 </Box>
               </Grid>
-              <Grid size={6}>
+              <Grid item xs={6}>
                 <Box sx={{ textAlign: 'center', p: 2 }}>
                   <Typography variant="h4" sx={{ fontWeight: 700, color: 'warning.main' }}>
                     {completedTasks}
@@ -309,7 +296,7 @@ const UserPortal: React.FC = () => {
                   </Typography>
                 </Box>
               </Grid>
-              <Grid size={6}>
+              <Grid item xs={6}>
                 <Box sx={{ textAlign: 'center', p: 2 }}>
                   <Typography variant="h4" sx={{ fontWeight: 700, color: 'error.main' }}>
                     {getOverdueTasks().length}
@@ -632,7 +619,7 @@ const UserPortal: React.FC = () => {
           )}
 
           <Grid container spacing={3}>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid item xs={12} sm={6} md={3}>
               <UserStatCard
                 title="My Tasks"
                 value={getUserTasks().length}
@@ -643,7 +630,7 @@ const UserPortal: React.FC = () => {
                 trendDirection="up"
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid item xs={12} sm={6} md={3}>
               <UserStatCard
                 title="My Projects"
                 value={getUserProjects().length}
@@ -654,7 +641,7 @@ const UserPortal: React.FC = () => {
                 trendDirection="up"
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid item xs={12} sm={6} md={3}>
               <UserStatCard
                 title="Today's Tasks"
                 value={getTodayTasks().length}
@@ -665,7 +652,7 @@ const UserPortal: React.FC = () => {
                 trendDirection="down"
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+            <Grid item xs={12} sm={6} md={3}>
               <UserStatCard
                 title="Overdue"
                 value={getOverdueTasks().length}
@@ -679,19 +666,19 @@ const UserPortal: React.FC = () => {
           </Grid>
 
           <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid item xs={12} md={4}>
               <PersonalProgress />
             </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid item xs={12} md={4}>
               <TodayTasks />
             </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid item xs={12} md={4}>
               <UpcomingDeadlines />
             </Grid>
           </Grid>
 
           <Grid container spacing={3} sx={{ mt: 2 }}>
-            <Grid size={12}>
+            <Grid item xs={12}>
               <MyTasks />
             </Grid>
           </Grid>

@@ -35,6 +35,7 @@ import {
   Settings,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import aiService from '../services/aiService';
 
 interface Message {
   id: string;
@@ -43,6 +44,7 @@ interface Message {
   timestamp: Date;
   senderName: string;
   senderAvatar?: string;
+  confidence?: number;
 }
 
 interface ChatBotProps {
@@ -58,6 +60,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose, userRole }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [error, setError] = useState('');
+  const [aiServiceStatus, setAiServiceStatus] = useState<'checking' | 'available' | 'unavailable'>('checking');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -73,12 +76,17 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose, userRole }) => {
     }
   }, [isOpen, isMinimized]);
 
-  // Initialize with welcome message
+  // Initialize with welcome message and check AI service status
   useEffect(() => {
     if (isOpen && messages.length === 0) {
+      // Check AI service status
+      aiService.checkServiceHealth().then((isAvailable) => {
+        setAiServiceStatus(isAvailable ? 'available' : 'unavailable');
+      });
+
       const welcomeMessage: Message = {
         id: 'welcome',
-        content: `Hello ${user?.full_name || 'there'}! I'm your AI assistant. I can help you with:
+        content: `Hello ${user?.full_name || 'there'}! I'm your AI assistant powered by Google AI. I can help you with:
         
 • Project management questions
 • Task assignments and updates
@@ -91,6 +99,7 @@ How can I assist you today?`,
         timestamp: new Date(),
         senderName: 'AI Assistant',
         senderAvatar: '🤖',
+        confidence: 0.95,
       };
       setMessages([welcomeMessage]);
     }
@@ -114,16 +123,22 @@ How can I assist you today?`,
     setError('');
 
     try {
-      // Generate AI response using local function
-      const aiResponse = await generateAIResponse(inputMessage, userRole);
+      // Generate AI response using Google AI service
+      const aiResponse = await aiService.generateResponse(
+        inputMessage,
+        user?.id?.toString() || 'anonymous',
+        userRole,
+        'Project management assistance'
+      );
       
       const aiMessage: Message = {
         id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        content: aiResponse,
+        content: aiResponse.text,
         sender: 'ai',
         timestamp: new Date(),
         senderName: 'AI Assistant',
         senderAvatar: '🤖',
+        confidence: aiResponse.confidence,
       };
 
       setMessages(prev => [...prev, aiMessage]);

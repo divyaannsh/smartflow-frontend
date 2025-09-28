@@ -20,7 +20,6 @@ import {
   DialogActions,
   IconButton,
   LinearProgress,
-  Tooltip,
 } from '@mui/material';
 import { Grid } from '@mui/material';
 import {
@@ -29,9 +28,6 @@ import {
   FilterList,
   Edit,
   Delete,
-  Assignment,
-  Schedule,
-  TrendingUp,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { usersService } from '../services/apiService';
@@ -181,7 +177,7 @@ const Users: React.FC = () => {
               />
               
               <Grid container spacing={1} sx={{ mt: 1 }}>
-                <Grid size={6}>
+                <Grid item xs={6}>
                   <Box textAlign="center">
                     <Typography variant="h6" color="primary">
                       {workload.total_tasks}
@@ -191,7 +187,7 @@ const Users: React.FC = () => {
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid size={6}>
+                <Grid item xs={6}>
                   <Box textAlign="center">
                     <Typography variant="h6" color="success.main">
                       {workload.done_tasks}
@@ -202,7 +198,7 @@ const Users: React.FC = () => {
                   </Box>
                 </Grid>
                 {workload.overdue_tasks > 0 && (
-                  <Grid size={12}>
+                  <Grid item xs={12}>
                     <Box textAlign="center">
                       <Typography variant="h6" color="error">
                         {workload.overdue_tasks}
@@ -295,7 +291,7 @@ const Users: React.FC = () => {
 
       <Box sx={{ mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid item xs={12} md={6}>
             <TextField
               fullWidth
               placeholder="Search users..."
@@ -306,7 +302,7 @@ const Users: React.FC = () => {
               }}
             />
           </Grid>
-          <Grid size={{ xs: 12, md: 3 }}>
+          <Grid item xs={12} md={3}>
             <FormControl fullWidth>
               <InputLabel>Role</InputLabel>
               <Select
@@ -321,7 +317,7 @@ const Users: React.FC = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid size={{ xs: 12, md: 3 }}>
+          <Grid item xs={12} md={3}>
             <Chip
               icon={<FilterList />}
               label={`${filteredUsers.length} members`}
@@ -345,7 +341,7 @@ const Users: React.FC = () => {
         ) : (
         <Grid container spacing={3}>
           {filteredUsers.map((user) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={user.id}>
+            <Grid item xs={12} sm={6} md={4} key={user.id}>
               <UserCard user={user} />
             </Grid>
           ))}

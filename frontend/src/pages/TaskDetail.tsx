@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Typography,
   Paper,
-  Card,
-  CardContent,
   Chip,
   Button,
-  LinearProgress,
   Avatar,
   IconButton,
   Dialog,
@@ -22,54 +19,28 @@ import {
   MenuItem,
   Alert,
   CircularProgress,
-  Divider,
   List,
   ListItem,
   ListItemText,
   ListItemAvatar,
-  Tooltip,
-  Badge,
   Tabs,
   Tab,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextareaAutosize,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
+  Divider,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {
   Edit,
   Delete,
   Add,
-  Assignment,
-  Schedule,
-  Person,
-  Group,
-  TrendingUp,
-  Warning,
-  CheckCircle,
-  Error,
   Visibility,
-  AttachFile,
-  Comment,
-  MoreVert,
   ArrowBack,
-  ExpandMore,
-  Timer,
-  PlayArrow,
-  Pause,
-  Stop,
   Send,
+  Pause,
+  PlayArrow,
+  Stop,
   Reply,
-  Download,
-  Upload,
-  History,
+  Assignment,
+  AttachFile,
   Notifications,
 } from '@mui/icons-material';
 import { tasksService, projectsService, usersService } from '../services/apiService';
@@ -130,23 +101,7 @@ const TaskDetail: React.FC = () => {
     assigned_to: '',
   });
 
-  useEffect(() => {
-    if (id) {
-      loadTaskData();
-    }
-  }, [id]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isTimerRunning) {
-      interval = setInterval(() => {
-        setTimerSeconds(prev => prev + 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isTimerRunning]);
-
-  const loadTaskData = async () => {
+  const loadTaskData = useCallback(async () => {
     try {
       setLoading(true);
       const [taskData, projectsData, usersData] = await Promise.all([
@@ -194,7 +149,23 @@ const TaskDetail: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      loadTaskData();
+    }
+  }, [id, loadTaskData]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isTimerRunning) {
+      interval = setInterval(() => {
+        setTimerSeconds(prev => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning]);
 
   const handleEditTask = async () => {
     try {
@@ -376,7 +347,7 @@ const TaskDetail: React.FC = () => {
       {/* Quick Actions */}
       <Paper sx={{ p: 2, mb: 3 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <Box display="flex" alignItems="center" gap={2}>
               <Typography variant="body2" color="text.secondary">
                 Status:
@@ -403,7 +374,7 @@ const TaskDetail: React.FC = () => {
               </Button>
             </Box>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
+          <Grid item xs={12} sm={6}>
             <Box display="flex" alignItems="center" gap={2}>
               <Typography variant="body2" color="text.secondary">
                 Time Tracking:
@@ -424,7 +395,7 @@ const TaskDetail: React.FC = () => {
 
       {/* Main Content */}
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 8 }}>
+        <Grid item xs={12} md={8}>
           <Paper sx={{ width: '100%' }}>
             <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
               <Tab label="Details" />
@@ -443,7 +414,7 @@ const TaskDetail: React.FC = () => {
               </Typography>
 
               <Grid container spacing={2} mb={3}>
-                <Grid size={{ xs: 6, sm: 3 }}>
+                <Grid item xs={6} sm={3}>
                   <Typography variant="body2" color="text.secondary">
                     Assigned To
                   </Typography>
@@ -451,7 +422,7 @@ const TaskDetail: React.FC = () => {
                     {task.assigned_to_name || 'Unassigned'}
                   </Typography>
                 </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
+                <Grid item xs={6} sm={3}>
                   <Typography variant="body2" color="text.secondary">
                     Created By
                   </Typography>
@@ -459,7 +430,7 @@ const TaskDetail: React.FC = () => {
                     {task.created_by_name}
                   </Typography>
                 </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
+                <Grid item xs={6} sm={3}>
                   <Typography variant="body2" color="text.secondary">
                     Estimated Hours
                   </Typography>
@@ -467,7 +438,7 @@ const TaskDetail: React.FC = () => {
                     {task.estimated_hours || 0}h
                   </Typography>
                 </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
+                <Grid item xs={6} sm={3}>
                   <Typography variant="body2" color="text.secondary">
                     Actual Hours
                   </Typography>
@@ -586,7 +557,7 @@ const TaskDetail: React.FC = () => {
           </Paper>
         </Grid>
 
-        <Grid size={{ xs: 12, md: 4 }}>
+        <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Task Information

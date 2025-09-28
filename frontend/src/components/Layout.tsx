@@ -41,6 +41,7 @@ import {
   Group,
   Timeline,
   Assessment,
+  MonetizationOn,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import NotificationSystem from './NotificationSystem';
@@ -90,6 +91,14 @@ const Layout: React.FC = () => {
       { text: 'My Portal', icon: <Person />, path: '/portal', description: 'Personal workspace' },
     ];
   }
+
+  // Add pricing for all users
+  menuItems.push({
+    text: 'Pricing',
+    icon: <MonetizationOn />,
+    path: '/pricing',
+    description: 'View plans and pricing'
+  });
 
   // Add role-specific admin extras
   if (user?.role === 'admin') {

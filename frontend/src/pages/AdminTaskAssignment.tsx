@@ -182,7 +182,7 @@ const AdminTaskAssignment: React.FC = () => {
 
       <Grid container spacing={3}>
         {/* Team Workload Overview */}
-        <Grid size={12}>
+        <Grid item xs={12}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Team Workload Overview
@@ -191,7 +191,7 @@ const AdminTaskAssignment: React.FC = () => {
               {users.map((user) => {
                 const workload = userWorkloads[user.id];
                 return (
-                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={user.id}>
+                  <Grid item xs={12} sm={6} md={4} key={user.id}>
                     <Card>
                       <CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -223,7 +223,7 @@ const AdminTaskAssignment: React.FC = () => {
                               sx={{ height: 6, borderRadius: 3, mb: 1 }}
                             />
                             <Grid container spacing={1}>
-                              <Grid size={{ xs: 6 }}>
+                              <Grid item xs={6}>
                                 <Typography variant="h6" color="success.main">
                                   {workload.done_tasks}
                                 </Typography>
@@ -231,7 +231,7 @@ const AdminTaskAssignment: React.FC = () => {
                                   Done
                                 </Typography>
                               </Grid>
-                              <Grid size={{ xs: 6 }}>
+                              <Grid item xs={6}>
                                 <Typography variant="h6" color="warning.main">
                                   {workload.in_progress_tasks}
                                 </Typography>
@@ -240,7 +240,7 @@ const AdminTaskAssignment: React.FC = () => {
                                 </Typography>
                               </Grid>
                               {workload.overdue_tasks > 0 && (
-                                <Grid size={{ xs: 12 }}>
+                                <Grid item xs={12}>
                                   <Typography variant="h6" color="error">
                                     {workload.overdue_tasks} overdue
                                   </Typography>
@@ -259,7 +259,7 @@ const AdminTaskAssignment: React.FC = () => {
         </Grid>
 
         {/* Unassigned Tasks */}
-        <Grid size={12}>
+        <Grid item xs={12}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Unassigned Tasks ({unassignedTasks.length})
@@ -332,7 +332,7 @@ const AdminTaskAssignment: React.FC = () => {
         </Grid>
 
         {/* Assigned Tasks */}
-        <Grid size={12}>
+        <Grid item xs={12}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>
               Assigned Tasks ({assignedTasks.length})
